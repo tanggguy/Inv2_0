@@ -193,7 +193,7 @@ python scripts\start_paper_trading.py --check-only
 python start_paper_trading.py --config
 
 # Tester Telegram
-python start_paper_trading.py --test-telegram
+python scripts\start_paper_trading.py --test-telegram
 
 # Restaurer depuis le dernier état
 python start_paper_trading.py --restore

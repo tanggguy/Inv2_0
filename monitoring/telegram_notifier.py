@@ -309,7 +309,7 @@ Heure d'arrêt: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
     
     def close(self):
         """Ferme les connexions"""
-        if self._loop:
+        if self._loop :
             self._loop.call_soon_threadsafe(self._loop.stop)
         if self._thread:
             self._thread.join(timeout=2)

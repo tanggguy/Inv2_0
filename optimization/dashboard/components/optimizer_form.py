@@ -37,6 +37,11 @@ def get_available_strategies() -> Dict[str, type]:
         strategies['BollingerBands'] = MeanReversionStrategy
     except:
         pass
+    try:
+        from strategies.squeezemomentumstrategy import SqueezeMomentumStrategy
+        strategies['SqueezeMomentum'] = SqueezeMomentumStrategy
+    except:
+        pass
     # Stratégies avancées
     try:
         from strategies.advanced_strategies import (

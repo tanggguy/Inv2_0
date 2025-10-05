@@ -59,8 +59,8 @@ class StrategyInstance:
             broker = self.store.get_broker()
             self.cerebro.setbroker(broker)
             
-            # Capital initial
-            self.cerebro.broker.setcash(self.config['capital_allocation'])
+            # # Capital initial
+            # self.cerebro.broker.setcash(self.config['capital_allocation'])
             
             # Ajouter les données pour chaque symbole
             for symbol in self.config['symbols']:

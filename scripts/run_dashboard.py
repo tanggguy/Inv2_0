@@ -43,7 +43,7 @@ def main():
     print("="*70)
     
     # Chemin vers le dashboard
-    dashboard_path = Path(__file__).parent / "dashboard" / "app.py"
+    dashboard_path = Path(__file__).parent.parent / "optimization" / "dashboard" / "app.py"
     
     if not dashboard_path.exists():
         print(f"❌ Fichier dashboard introuvable: {dashboard_path}")

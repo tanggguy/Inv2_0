@@ -39,6 +39,37 @@ mean_reversion:
     timeframe: "1d"
   enabled: false
 
+  
+squeeze_momentum:
+  name: "Squeeze Momentum"
+  description: "Stratégie basée sur squeeze et breakouts"
+  parameters:
+    # Filtres
+    min_volume_avg: 1000000
+    
+    # Indicateurs
+    bb_period: 20
+    bb_std: 2.0
+    keltner_period: 20
+    keltner_mult: 2.0
+    atr_period: 14
+    volume_period: 20
+    adx_period: 14
+    
+    # Conditions squeeze
+    min_squeeze_days: 5
+    squeeze_adx_max: 20
+    
+    # Conditions breakout
+    breakout_volume_mult: 2.0
+    breakout_adx_min: 20
+    
+    # Gestion sorties
+    target_multiplier: 2.0
+    risk_per_trade: 0.02
+    
+    timeframe: "1d"
+  enabled: true
 # Configuration globale pour toutes les stratégies
 global:
   max_positions: 5

@@ -100,6 +100,7 @@ paper_trading/
 ```
 optimization/
 ├── optimizer.py            # Moteur d'optimisation
+├── optimizer_worker.py
 ├── results_storage.py      # Stockage résultats
 ├── optimization_config.py  # Configuration
 ├── run_dashboard.py  
@@ -169,9 +170,9 @@ python main.py --strategy RSI --symbols AAPL \
 python main.py --strategy MovingAverage --symbols AAPL --capital 50000
 
 # Avec graphiques
-python main.py --strategy MACrossoverAdvanced --symbols AAPL --plot
-python main.py --strategy MovingAverage --symbols BTC-USD --plot
-
+python main.py --strategy SqueezeMomentumStrategy --symbols AAPL --plot
+python main.py --strategy RSITrailingStop --symbols BTC-USD --plot
+python main2.py --strategy SqueezeMomentumStrategy --symbols AAPL --start-date 2015-12-31 --end-date 2025-12-31
 # Mode verbose (plus de logs)
 python main.py --strategy RSI --symbols TSLA --verbose
 
@@ -185,5 +186,6 @@ BreakoutATRStop
 MomentumMultipleStops
 MaSuperStrategie
 MeanReversionStrategy
+SqueezeMomentumStrategy
 
 python optimization\cli\optimize_cli.py --interactive

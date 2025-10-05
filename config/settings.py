@@ -81,6 +81,11 @@ AVAILABLE_STRATEGIES = [
     "MovingAverage",
     "RSI",
     "MACD",
+    "BollingerBands",
+    "MeanReversionStrategy",
+    "SqueezeMomentumStrategy",
+    "RSITrailingStop",
+    "BreakoutATRStop",
     "Custom",
 ]
 

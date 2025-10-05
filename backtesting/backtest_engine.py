@@ -70,6 +70,8 @@ class BacktestEngine:
                 "MomentumMultipleStops": ("strategies.advanced_strategies", "MomentumMultipleStops"),
                 "MaSuperStrategie": ("strategies.masuperstrategie", "MaSuperStrategie"),
                 "BollingerBandsStrategy": ("strategies.bollingerbands", "BollingerBandsStrategy"),
+                "MeanReversionStrategy": ("strategies.bollingerbands", "MeanReversionStrategy"),
+                "SqueezeMomentumStrategy": ("strategies.squeezemomentumstrategy", "SqueezeMomentumStrategy"),
             }
             
             # Vérifier d'abord les stratégies hardcodées

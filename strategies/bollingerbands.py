@@ -4,7 +4,7 @@ import backtrader as bt
 class MeanReversionStrategy(BaseAdvancedStrategy):
     """
     Stratégie de retour à la moyenne avec Bollinger Bands
-    Achète quand survendu, vend quand suracheté
+    Achète quand survendu, vend quand suracheté + RSI pour confirmation
     """
     
     params = (
