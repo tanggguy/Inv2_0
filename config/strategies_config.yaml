@@ -1,0 +1,47 @@
+# Configuration des Stratégies de Trading
+
+moving_average:
+  name: "Moving Average Crossover"
+  description: "Stratégie basée sur le croisement de moyennes mobiles"
+  parameters:
+    fast_period: 50
+    slow_period: 200
+    timeframe: "1d"
+  enabled: true
+
+rsi:
+  name: "RSI Strategy"
+  description: "Stratégie basée sur l'indice de force relative"
+  parameters:
+    period: 14
+    overbought: 70
+    oversold: 30
+    timeframe: "1d"
+  enabled: true
+
+macd:
+  name: "MACD Strategy"
+  description: "Stratégie MACD avec signal"
+  parameters:
+    fast_period: 12
+    slow_period: 26
+    signal_period: 9
+    timeframe: "1d"
+  enabled: true
+
+mean_reversion:
+  name: "Mean Reversion"
+  description: "Stratégie de retour à la moyenne"
+  parameters:
+    lookback_period: 20
+    entry_std: 2.0
+    exit_std: 0.5
+    timeframe: "1d"
+  enabled: false
+
+# Configuration globale pour toutes les stratégies
+global:
+  max_positions: 5
+  position_size_pct: 0.2  # 20% du capital par position
+  stop_loss_pct: 0.05     # Stop loss à 5%
+  take_profit_pct: 0.15   # Take profit à 15%

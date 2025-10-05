@@ -1,0 +1,150 @@
+{
+  "presets": {
+    "quick": {
+      "name": "Test Rapide",
+      "description": "Optimisation rapide pour tester (peu de combinaisons)",
+      "symbols": ["AAPL"],
+      "period": {
+        "start": "2023-01-01",
+        "end": "2024-01-01"
+      },
+      "capital": 100000,
+      "param_grid": {
+        "ma_period": [20, 50],
+        "rsi_period": [14],
+        "stop_loss_pct": [0.02]
+      }
+    },
+    
+    "standard": {
+      "name": "Optimisation Standard",
+      "description": "Configuration équilibrée (recommandée)",
+      "symbols": ["AAPL", "MSFT"],
+      "period": {
+        "start": "2022-01-01",
+        "end": "2024-01-01"
+      },
+      "capital": 100000,
+      "param_grid": {
+        "ma_period": [10, 20, 30, 50],
+        "rsi_period": [7, 14, 21],
+        "stop_loss_pct": [0.015, 0.02, 0.025],
+        "trailing_stop_pct": [0.025, 0.03, 0.035]
+      }
+    },
+    
+    "exhaustive": {
+      "name": "Optimisation Complète",
+      "description": "Recherche exhaustive (beaucoup de combinaisons)",
+      "symbols": ["AAPL", "MSFT", "GOOGL", "AMZN"],
+      "period": {
+        "start": "2020-01-01",
+        "end": "2024-01-01"
+      },
+      "capital": 100000,
+      "param_grid": {
+        "ma_period": [10, 15, 20, 25, 30, 40, 50],
+        "rsi_period": [7, 10, 14, 21, 28],
+        "stop_loss_pct": [0.01, 0.015, 0.02, 0.025, 0.03],
+        "trailing_stop_pct": [0.02, 0.025, 0.03, 0.035, 0.04],
+        "trailing_activation_pct": [0.015, 0.02, 0.025]
+      }
+    },
+    
+    "walk_forward_quick": {
+      "name": "Walk-Forward Rapide",
+      "description": "Walk-forward sur période courte",
+      "symbols": ["AAPL"],
+      "period": {
+        "start": "2022-01-01",
+        "end": "2024-01-01"
+      },
+      "capital": 100000,
+      "walk_forward": {
+        "in_sample_months": 12,
+        "out_sample_months": 3
+      },
+      "param_grid": {
+        "ma_period": [20, 30, 50],
+        "rsi_period": [14, 21],
+        "stop_loss_pct": [0.02, 0.025]
+      }
+    },
+    
+    "walk_forward_robust": {
+      "name": "Walk-Forward Robuste",
+      "description": "Walk-forward sur longue période pour validation",
+      "symbols": ["AAPL"],
+      "period": {
+        "start": "2019-01-01",
+        "end": "2024-01-01"
+      },
+      "capital": 100000,
+      "walk_forward": {
+        "in_sample_months": 18,
+        "out_sample_months": 18
+      },
+      "param_grid": {
+        "ma_period": [20, 30, 50],
+        "rsi_period": [7, 14, 21],
+        "stop_loss_pct": [0.015, 0.02, 0.025]
+      }
+    }
+  },
+  
+  "strategy_defaults": {
+    "MovingAverage": {
+      "param_grid": {
+        "fast_period": [10, 20, 30, 50],
+        "slow_period": [50, 100, 150, 200]
+      }
+    },
+    
+    "RSI": {
+      "param_grid": {
+        "rsi_period": [7, 10, 14, 21, 28],
+        "rsi_oversold": [25, 30, 35],
+        "rsi_overbought": [65, 70, 75]
+      }
+    },
+    
+    "MaSuperStrategie": {
+      "param_grid": {
+        "ma_period": [10, 20, 30, 50],
+        "rsi_period": [7, 14, 21],
+        "stop_loss_pct": [0.015, 0.02, 0.025],
+        "trailing_stop_pct": [0.025, 0.03, 0.035],
+        "trailing_activation_pct": [0.015, 0.02, 0.025]
+      }
+    },
+    
+    "MACrossoverAdvanced": {
+      "param_grid": {
+        "fast_period": [10, 15, 20, 25, 30],
+        "slow_period": [40, 50, 60, 75, 100],
+        "stop_loss_pct": [0.015, 0.02, 0.025],
+        "risk_reward_ratio": [2.0, 2.5, 3.0]
+      }
+    },
+    
+    "RSITrailingStop": {
+      "param_grid": {
+        "rsi_period": [7, 10, 14, 21],
+        "rsi_oversold": [25, 30, 35],
+        "rsi_overbought": [65, 70, 75],
+        "trailing_stop_pct": [0.025, 0.03, 0.035, 0.04],
+        "trailing_activation_pct": [0.015, 0.02, 0.025]
+      }
+    },
+    "BollingerBands": {
+      "param_grid": {
+        "bb_period": [30,40,45,50,55,60],
+        "bb_std": [1,1.25,1.5,1.75,2, 2.5],
+        "rsi_oversold" : [30],
+        "rsi_overbought" : [70],
+        "stop_loss_pct": [0.02, 0.025,0.03],
+        "take_profit_pct": [0.04, 0.05 , 0.06]
+      }
+    }
+  }
+}

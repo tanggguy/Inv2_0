@@ -1,0 +1,91 @@
+"""
+Classe de base pour toutes les stratégies
+"""
+import backtrader as bt
+from monitoring.logger import setup_logger
+
+logger = setup_logger("strategy")
+
+
+class BaseStrategy(bt.Strategy):
+    """
+    Stratégie de base avec fonctionnalités communes
+    """
+    
+    params = (
+        ('printlog', True),
+    )
+    
+    def __init__(self):
+        # Compteurs
+        self.order = None
+        self.buyprice = None
+        self.buycomm = None
+        self.trade_count = 0
+        
+        logger.info(f"Initialisation de {self.__class__.__name__}")
+    
+    def log(self, txt, dt=None, level="INFO"):
+        """Fonction de logging"""
+        if self.params.printlog:
+            dt = dt or self.datas[0].datetime.date(0)
+            log_msg = f"{dt.isoformat()} - {txt}"
+            
+            if level == "INFO":
+                logger.info(log_msg)
+            elif level == "WARNING":
+                logger.warning(log_msg)
+            elif level == "ERROR":
+                logger.error(log_msg)
+    
+    def notify_order(self, order):
+        """Notification des ordres"""
+        if order.status in [order.Submitted, order.Accepted]:
+            return
+        
+        if order.status in [order.Completed]:
+            if order.isbuy():
+                self.log(
+                    f'ACHAT EXÉCUTÉ, Prix: {order.executed.price:.2f}, '
+                    f'Coût: {order.executed.value:.2f}, '
+                    f'Commission: {order.executed.comm:.2f}'
+                )
+                self.buyprice = order.executed.price
+                self.buycomm = order.executed.comm
+            else:
+                self.log(
+                    f'VENTE EXÉCUTÉE, Prix: {order.executed.price:.2f}, '
+                    f'Coût: {order.executed.value:.2f}, '
+                    f'Commission: {order.executed.comm:.2f}'
+                )
+            
+            self.trade_count += 1
+        
+        elif order.status in [order.Canceled, order.Margin, order.Rejected]:
+            self.log('Ordre annulé/rejeté', level="WARNING")
+        
+        self.order = None
+    
+    def notify_trade(self, trade):
+        """Notification des trades fermés"""
+        if not trade.isclosed:
+            return
+        
+        self.log(
+            f'TRADE FERMÉ, Profit Brut: {trade.pnl:.2f}, '
+            f'Profit Net: {trade.pnlcomm:.2f}'
+        )
+    
+    def next(self):
+        """
+        Méthode appelée à chaque barre
+        À surcharger dans les stratégies filles
+        """
+        pass
+    
+    def stop(self):
+        """Appelé à la fin du backtest"""
+        self.log(
+            f'Stratégie terminée - Nombre de trades: {self.trade_count}, '
+            f'Valeur finale: {self.broker.getvalue():.2f}'
+        )
