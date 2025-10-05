@@ -59,24 +59,33 @@ inv2_0/
 └──main
 ```
 
+```
 backtesting/
 ├── backtest_engine.py     # Moteur principal
 ├── performance_analyzer.py # Analyse performances
 └── position_sizer.py      # Gestion positions
+```
 
+```
 config/
 ├── optimization_presets.json     
 ├── settings.py
 ├── paper_trading_config.py
 └── strategies_config.yaml     
+```
 
+```
 data/
 ├── data_handler.py        # Gestion données
 ├── data_fetcher.py       # Téléchargement
+```
 
+```
 monitoring/
 ├── logger.py             # Logging centralisé
+```
 
+```
 paper_trading/             
 ├── __init__.py
 ├── paper_engine.py         # Moteur principal paper trading
@@ -86,7 +95,9 @@ paper_trading/
 ├── portfolio_state.py      # Sauvegarde état portefeuille
 ├── circuit_breaker.py      # Circuit breakers & risk controls
 └── multi_strategy_runner.py # Orchestrateur multi-stratégies
+```
 
+```
 optimization/
 ├── optimizer.py            # Moteur d'optimisation
 ├── results_storage.py      # Stockage résultats
@@ -96,14 +107,16 @@ optimization/
     ├── app.py
     ├── pages/
     └── components/
+```
 
+```
 scripts/
 ├── create_strategy.py        # Création interactive de stratégies
 ├── quick_start.py           # optimisation rapide 
 └── start_paper_trading.py   # Démarrage du paper trading
+```
 
-
-
+```
 strategies/
 ├── base_strategy.py           # Classe de base
 ├── moving_average.py         # Stratégie MA
@@ -112,7 +125,7 @@ strategies/
 ├── masuperstrategie.py
 ├── strategy_builder.py
 └── strategy_templates.py    # Templates
-
+```
 
 
 
