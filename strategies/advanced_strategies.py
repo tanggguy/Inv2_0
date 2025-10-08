@@ -156,7 +156,11 @@ class BaseAdvancedStrategy(BaseStrategy):
             return False
         
         current_price = self.datas[0].close[0]
-        
+        if self.highest_price is None or self.entry_price is None:
+            # Devrait normalement être initialisé dans notify_order
+            # Mais si pas encore fait, initialiser maintenant
+            self.entry_price = self.position.price
+            self.highest_price = current_price
         # Mettre à jour le plus haut prix pour trailing stop
         if current_price > self.highest_price:
             self.highest_price = current_price
@@ -195,7 +199,7 @@ class BaseAdvancedStrategy(BaseStrategy):
 
 class MACrossoverAdvanced(BaseAdvancedStrategy):
     """
-    Croisement de moyennes mobiles avec gestion avancée des stops
+    Croisement de moyennes mobiles + RSI avec gestion avancée des stops
     
     Configuration recommandée:
     - stop_loss_pct = 0.02 (2%)
@@ -204,12 +208,14 @@ class MACrossoverAdvanced(BaseAdvancedStrategy):
     """
     
     params = (
-        ('fast_period', 20),
-        ('slow_period', 50),
+        ('rsi_period', 14),
+        ('rsi_oversold', 60),
+        ('fast_period', 50),
+        ('slow_period', 100),
         ('use_stop_loss', True),
-        ('stop_loss_pct', 0.02),
+        ('stop_loss_pct', 0.03),
         ('use_take_profit', True),
-        ('risk_reward_ratio', 2.5),
+        ('risk_reward_ratio', 3),
         ('use_trailing_stop', True),
         ('trailing_stop_pct', 0.025),
         ('trailing_activation_pct', 0.03),
@@ -218,6 +224,11 @@ class MACrossoverAdvanced(BaseAdvancedStrategy):
     
     def __init__(self):
         super().__init__()
+
+        self.rsi = bt.indicators.RSI(
+            self.datas[0].close,
+            period=self.params.rsi_period
+        )
         
         self.fast_ma = bt.indicators.EMA(
             self.datas[0].close,
@@ -245,9 +256,11 @@ class MACrossoverAdvanced(BaseAdvancedStrategy):
         if self.order:
             return
         
+        rsi_value = self.rsi[0]
+
         if not self.position:
             # Signal d'achat
-            if self.crossover > 0:
+            if self.crossover > 0 and rsi_value < self.params.rsi_oversold:
                 self.log(f'SIGNAL ACHAT, Prix: {self.datas[0].close[0]:.2f}')
                 size = int((self.broker.getcash() * 0.95) / self.datas[0].close[0])
                 self.order = self.buy(size=size)

@@ -90,7 +90,8 @@ class SqueezeMomentumStrategy(BaseStrategy):
         # ═══════════════════════════════════════════════════════════════
         # FILTRES PRÉALABLES
         # ═══════════════════════════════════════════════════════════════
-        ('min_volume_ratio', 0.8),      # Volume moyen minimum (liquidité)
+        ('use_min_volume_ratio', False),
+        ('min_volume_ratio', 0.9),      # Volume moyen minimum (liquidité)
         # ('min_price', 5.0),               # Prix minimum (éviter penny stocks)
         
         # ═══════════════════════════════════════════════════════════════
@@ -109,18 +110,18 @@ class SqueezeMomentumStrategy(BaseStrategy):
         # ═══════════════════════════════════════════════════════════════
         # CONDITIONS SQUEEZE (CORRIGÉES)
         # ═══════════════════════════════════════════════════════════════
-        ('min_squeeze_days', 2),          # Minimum 5 jours de squeeze consécutifs
+        ('min_squeeze_days', 3),          # Minimum 5 jours de squeeze consécutifs
         ('squeeze_adx_max', 35),          # ✅ ADX < 25 durant squeeze (moins restrictif)
-        ('squeeze_volume_factor', 1.0),   # Volume moyen < 90% de la SMA
+        ('squeeze_volume_factor', 1.2),   # Volume moyen < 90% de la SMA
         ('squeeze_atr_factor', 1.3),      # ATR moyen < 110% de la SMA ATR
         
         # ═══════════════════════════════════════════════════════════════
         # CONDITIONS BREAKOUT (OPTIMISÉES)
         # ═══════════════════════════════════════════════════════════════
         ('breakout_volume_mult', 1.0),    # ✅ Volume >2× moyenne (plus sélectif)
-        ('breakout_adx_min', 15),         # ✅ ADX >20 au breakout (vraie tendance)
+        ('breakout_adx_min', 12),         # ✅ ADX >20 au breakout (vraie tendance)
         ('require_adx_rising', False),     # ✅ ADX doit être croissant
-        ('min_candle_body_pct', 0.3),     # Bougie doit avoir 30% de corps minimum
+        ('min_candle_body_pct', 0.2),     # Bougie doit avoir 30% de corps minimum
         
         # ═══════════════════════════════════════════════════════════════
         # FILTRES CONTEXTE MARCHÉ (NOUVEAUX)
@@ -588,9 +589,9 @@ class SqueezeMomentumStrategy(BaseStrategy):
             return
         
         # Filtre liquidité minimum
-        
-        if self.data.volume[0] < self.volume_sma[0] * self.params.min_volume_ratio:
-            return
+        if self.params.use_min_volume_ratio :
+            if self.data.volume[0] < self.volume_sma[0] * self.params.min_volume_ratio:
+                return
         
         # ═══════════════════════════════════════════════════════════════
         # GESTION DES POSITIONS OUVERTES

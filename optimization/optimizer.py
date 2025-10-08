@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+# !/usr/bin/env python3
 """
 Optimiseur unifié pour les stratégies de trading - VERSION PARALLÉLISÉE
 
@@ -6,6 +6,7 @@ Optimiseur unifié pour les stratégies de trading - VERSION PARALLÉLISÉE
 - ✅ #1: Parallélisation multiprocessing (4-8x plus rapide)
 - ✅ #2: Cache des données (évite rechargement)
 - ✅ #4: Optimisations Backtrader (stdstats=False, exactbars=-1)
+- ✅ #5: Progression fluide avec estimation temps restant (ETA)
 
 GAINS ATTENDUS: 12-20x plus rapide vs version originale
 """
@@ -49,6 +50,7 @@ class UnifiedOptimizer:
     - Utilise multiprocessing pour Grid Search
     - Cache des données optimisé
     - Early stopping intégré
+    - Progression fluide avec ETA
     """
     
     def __init__(self, 
@@ -144,7 +146,7 @@ class UnifiedOptimizer:
         Lance l'optimisation
         
         Args:
-            progress_callback: Fonction callback(progress_pct) pour suivre la progression
+            progress_callback: Fonction callback(progress_pct, eta_seconds) pour suivre la progression
         
         Returns:
             Dict avec résultats de l'optimisation
@@ -187,7 +189,7 @@ class UnifiedOptimizer:
         Exploite tous les cores CPU disponibles.
         
         Args:
-            progress_callback: Fonction callback(progress_pct)
+            progress_callback: Fonction callback(progress_pct, eta_seconds)
         
         Returns:
             Dict avec résultats
@@ -232,21 +234,33 @@ class UnifiedOptimizer:
                 # starmap pour passer plusieurs arguments
                 # On utilise aussi imap pour avoir un itérateur et suivre la progression
                 
-                # Option 1: Tout d'un coup (plus rapide mais pas de progression)
-                # results_raw = pool.starmap(run_backtest_worker, tasks)
-                
-                # Option 2: Avec progression (un peu plus lent mais meilleur feedback)
+                # Option 2: Avec progression fluide
                 results_raw = []
                 
                 # Créer un itérateur avec chunksize pour optimiser
                 chunksize = max(1, total // (n_workers * 4))
                 
+                # Pour estimation du temps
+                start_time = time.time()
+                
                 for i, result in enumerate(pool.starmap(run_backtest_worker, tasks, chunksize=chunksize), 1):
                     results_raw.append(result)
                     
-                    # Callback progression
-                    if progress_callback and i % max(1, total // 20) == 0:
-                        progress_callback(i / total)
+                    # Callback progression BEAUCOUP PLUS FRÉQUENT (à chaque itération)
+                    if progress_callback:
+                        progress_pct = i / total
+                        
+                        # Estimation du temps restant
+                        elapsed = time.time() - start_time
+                        if i > 0:
+                            time_per_task = elapsed / i
+                            remaining_tasks = total - i
+                            eta_seconds = time_per_task * remaining_tasks
+                        else:
+                            eta_seconds = 0
+                        
+                        # Appeler le callback avec progression et ETA
+                        progress_callback(progress_pct, eta_seconds)
                     
                     # Log tous les 10%
                     if self.verbose and i % max(1, total // 10) == 0:
@@ -282,11 +296,120 @@ class UnifiedOptimizer:
         
         return results
     
+    # def _grid_search_parallel(self, progress_callback: Optional[Callable] = None) -> Dict:
+    #     """
+    #     🚀 OPTIMISATION #1: Grid Search PARALLÉLISÉ
+        
+    #     Utilise multiprocessing pour tester plusieurs combinaisons en parallèle.
+    #     Exploite tous les cores CPU disponibles.
+        
+    #     Args:
+    #         progress_callback: Fonction callback(progress_pct)
+        
+    #     Returns:
+    #         Dict avec résultats
+    #     """
+    #     # Générer toutes les combinaisons
+    #     param_names = list(self.param_grid.keys())
+    #     param_values = list(self.param_grid.values())
+    #     combinations = list(product(*param_values))
+        
+    #     total = len(combinations)
+    #     logger.info(f"📊 Grid Search PARALLÈLE: {total} combinaisons à tester")
+    #     logger.info(f"   Symboles: {', '.join(self.symbols)}")
+    #     logger.info(f"   Période: {self.start_date} → {self.end_date}")
+    #     logger.info(f"   Paramètres: {self.param_grid}")
+        
+    #     # Nombre de workers (laisser 1-2 cores libres pour le système)
+    #     n_workers = max(1, cpu_count() - 1)
+    #     logger.info(f"   Workers: {n_workers}/{cpu_count()} cores\n")
+        
+    #     # Préparer les tâches
+    #     preloaded_data = self._data_cache
+    #     tasks = []
+        
+    #     for combo in combinations:
+    #         params = dict(zip(param_names, combo))
+    #         # Chaque tâche = (params, données, classe, config)
+    #         tasks.append((
+    #             params,
+    #             preloaded_data,
+    #             self.strategy_class,
+    #             self.config
+    #         ))
+        
+    #     # Exécuter en parallèle
+    #     backtest_start = time.time()
+        
+    #     logger.info(f"🔥 Lancement de {n_workers} workers parallèles...")
+        
+    #     try:
+    #         # Utiliser multiprocessing.Pool
+    #         with Pool(processes=n_workers) as pool:
+    #             # starmap pour passer plusieurs arguments
+    #             # On utilise aussi imap pour avoir un itérateur et suivre la progression
+                
+    #             # Option 1: Tout d'un coup (plus rapide mais pas de progression)
+    #             # results_raw = pool.starmap(run_backtest_worker, tasks)
+                
+    #             # Option 2: Avec progression (un peu plus lent mais meilleur feedback)
+    #             results_raw = []
+                
+    #             # Créer un itérateur avec chunksize pour optimiser
+    #             chunksize = max(1, total // (n_workers * 4))
+                
+    #             for i, result in enumerate(pool.starmap(run_backtest_worker, tasks, chunksize=chunksize), 1):
+    #                 results_raw.append(result)
+                    
+    #                 # Callback progression
+    #                 if progress_callback and i % max(1, total // 20) == 0:
+    #                     progress_callback(i / total)
+                    
+    #                 # Log tous les 10%
+    #                 if self.verbose and i % max(1, total // 10) == 0:
+    #                     logger.info(f"  Progression: {i}/{total} ({i/total*100:.0f}%)")
+        
+    #     except Exception as e:
+    #         logger.error(f"❌ Erreur pendant la parallélisation: {e}")
+    #         logger.error("Passage en mode séquentiel...")
+    #         return self._grid_search(progress_callback)
+        
+    #     # Filtrer les None (résultats échoués ou filtrés par early stopping)
+    #     self.results = [r for r in results_raw if r is not None]
+        
+    #     backtest_time = time.time() - backtest_start
+        
+    #     # Statistiques
+    #     failed = total - len(self.results)
+    #     logger.info(f"\n✅ Parallélisation terminée:")
+    #     logger.info(f"   Temps: {backtest_time:.2f}s")
+    #     logger.info(f"   Vitesse: ~{backtest_time/total:.3f}s par combinaison")
+    #     logger.info(f"   Résultats valides: {len(self.results)}/{total}")
+    #     if failed > 0:
+    #         logger.info(f"   Filtrés/Échoués: {failed} ({failed/total*100:.1f}%)")
+        
+    #     # Speedup vs séquentiel
+    #     estimated_sequential = total * 0.55  # Temps moyen par combo en séquentiel
+    #     speedup = estimated_sequential / backtest_time if backtest_time > 0 else 0
+    #     logger.info(f"   🚀 Speedup estimé: {speedup:.1f}x vs séquentiel\n")
+        
+    #     # Analyser et sauvegarder
+    #     results = self._analyze_results()
+    #     self._save_results(results)
+        
+    #     return results
+    
     def _grid_search(self, progress_callback: Optional[Callable] = None) -> Dict:
         """
         Grid Search SÉQUENTIEL (version non parallélisée)
         
         Utilisé comme fallback si parallélisation échoue ou désactivée.
+        
+        Args:
+            progress_callback: Fonction callback(progress_pct, eta_seconds)
+        
+        Returns:
+            Dict avec résultats
         """
         # Générer toutes les combinaisons
         param_names = list(self.param_grid.keys())
@@ -301,6 +424,7 @@ class UnifiedOptimizer:
         
         # Tester chaque combinaison
         backtest_start = time.time()
+        start_time = time.time()  # ✅ Pour estimation du temps restant (ETA)
         
         for i, combo in enumerate(combinations, 1):
             params = dict(zip(param_names, combo))
@@ -316,11 +440,23 @@ class UnifiedOptimizer:
                 
                 if self.verbose:
                     logger.info(f"  → Sharpe: {result.get('sharpe', 0):.2f}, "
-                              f"Return: {result.get('return', 0):.2f}%\n")
+                            f"Return: {result.get('return', 0):.2f}%\n")
             
-            # Callback progression
+            # ✅ Callback progression avec ETA (2 arguments au lieu d'1)
             if progress_callback:
-                progress_callback(i / total)
+                progress_pct = i / total
+                
+                # Estimation du temps restant
+                elapsed = time.time() - start_time
+                if i > 0:
+                    time_per_task = elapsed / i
+                    remaining_tasks = total - i
+                    eta_seconds = time_per_task * remaining_tasks
+                else:
+                    eta_seconds = 0
+                
+                # Appeler le callback avec progression et ETA
+                progress_callback(progress_pct, eta_seconds)
         
         backtest_time = time.time() - backtest_start
         logger.info(f"⏱️ Temps de backtesting: {backtest_time:.2f}s")
