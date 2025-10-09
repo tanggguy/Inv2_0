@@ -30,7 +30,7 @@ from data.data_fetcher import create_data_feed
 from monitoring.logger import setup_logger
 from optimization.optimization_config import OptimizationConfig
 from optimization.results_storage import ResultsStorage
-
+from optimization.optuna_optimizer import OptunaOptimizer
 # Import des workers (doivent être au niveau module pour pickling)
 from optimization.optimizer_worker import run_backtest_worker
 
@@ -171,6 +171,8 @@ class UnifiedOptimizer:
             results = self._walk_forward(progress_callback)
         elif self.optimization_type == "random_search":
             results = self._random_search(progress_callback)
+        elif self.optimization_type == "optuna":  # <--- AJOUTER
+            results = self._optuna_optimization(progress_callback)
         else:
             raise ValueError(f"Type d'optimisation non supporté: {self.optimization_type}")
         
@@ -793,6 +795,50 @@ class UnifiedOptimizer:
         
         return {k: v for k, v in self.best_result.items() 
                 if k not in ['sharpe', 'return', 'drawdown', 'trades', 'win_rate']}
+    
+    def _optuna_optimization(self, progress_callback: Optional[Callable] = None) -> Dict:
+        """🔬 OPTIMISATION OPTUNA"""
+        from optimization.optuna_optimizer import OptunaOptimizer
+        
+        logger.info("🔬 Démarrage de l'optimisation Optuna")
+        
+        # Configuration
+        optuna_config = self.config.get('optuna', {})
+        n_trials = optuna_config.get('n_trials', 100)
+        
+        # Fonction objectif
+        def objective_function(params: Dict) -> float:
+            result = self._run_single_backtest(params)
+            if result is None:
+                return float('-inf')
+            return result.get('sharpe', 0)
+        
+        # Créer et lancer l'optimiseur
+        optuna_opt = OptunaOptimizer(
+            objective_func=objective_function,
+            param_grid=self.param_grid,
+            n_trials=n_trials,
+            direction='maximize',
+            study_name=f"{self.strategy_name}_{self.run_id}",
+            n_jobs=cpu_count() if self.use_parallel else 1,
+            logger=logger
+        )
+        
+        optuna_results = optuna_opt.optimize(progress_callback=progress_callback)
+        
+        # Récupérer les résultats
+        self.results = optuna_opt.optimization_history
+        
+        # Sauvegarder les visualisations
+        if optuna_config.get('save_plots', True):
+            optuna_opt.save_visualizations()
+        
+        # Analyser et retourner
+        results = self._analyze_results()
+        results['param_importance'] = optuna_opt.get_importance()
+        self._save_results(results)
+        
+        return results
 
 
 # Fonctions helper

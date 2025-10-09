@@ -8,6 +8,7 @@ from typing import Dict, Tuple, Optional
 from optimization.optimization_config import OptimizationConfig
 import importlib
 from datetime import datetime
+from components.optuna_components import display_optuna_config_section
 
 
 def get_available_strategies() -> Dict[str, type]:
@@ -149,27 +150,19 @@ def display_preset_selector(strategy_name: str = None) -> Tuple[str, Dict]:
     return preset_name, config
 
 def display_optimization_type_selector() -> str:
-    """
-    Affiche le sélecteur de type d'optimisation
-    
-    Returns:
-        Type d'optimisation sélectionné
-    """
     opt_type = st.radio(
         "🔬 Type d'optimisation",
-        options=['grid_search', 'walk_forward'],
+        options=['grid_search', 'walk_forward', 'optuna'],
         format_func=lambda x: {
-            'grid_search': '📊 Grid Search - Test toutes les combinaisons',
-            'walk_forward': '🚶 Walk-Forward - Validation robuste anti-overfitting'
-        }[x],
-        horizontal=True
+            'grid_search': '📊 Grid Search',
+            'walk_forward': '🚶 Walk-Forward',
+            'optuna': '🔬 Optuna - Bayésien (recommandé)'
+        }[x]
     )
     
-    # Afficher l'info selon le type
-    if opt_type == 'grid_search':
-        st.info("💡 Grid Search teste toutes les combinaisons de paramètres. Idéal pour trouver les meilleurs paramètres.")
-    else:
-        st.info("💡 Walk-Forward divise les données en périodes In-Sample/Out-Sample pour éviter l'overfitting.")
+    if opt_type == 'optuna':
+        optuna_config = display_optuna_config_section()
+        st.session_state.optuna_config = optuna_config
     
     return opt_type
 

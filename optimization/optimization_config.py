@@ -6,6 +6,8 @@ import json
 from pathlib import Path
 from typing import Dict, Optional, List
 from datetime import datetime
+from optimization.optuna_presets import OPTUNA_PRESETS
+
 # Import différé du logger pour éviter l'importation circulaire
 _logger = None
 
@@ -25,7 +27,7 @@ class OptimizationConfig:
     
     def __init__(self):
         self.presets = self._load_presets()
-    
+        self.presets.update(OPTUNA_PRESETS)
     def _load_presets(self) -> Dict:
         """Charge les presets depuis le fichier JSON"""
         try:

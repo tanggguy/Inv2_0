@@ -112,15 +112,19 @@ class SqueezeMomentumStrategy(BaseStrategy):
         # ═══════════════════════════════════════════════════════════════
         ('min_squeeze_days', 3),          # Minimum 5 jours de squeeze consécutifs
         ('squeeze_adx_max', 35),          # ✅ ADX < 25 durant squeeze (moins restrictif)
+        ('use_squeeze_volume_factor', True),   # Volume moyen < 90% de la SMA
         ('squeeze_volume_factor', 1.2),   # Volume moyen < 90% de la SMA
+        ('use_squeeze_atr_factor', True),
         ('squeeze_atr_factor', 1.3),      # ATR moyen < 110% de la SMA ATR
         
         # ═══════════════════════════════════════════════════════════════
         # CONDITIONS BREAKOUT (OPTIMISÉES)
         # ═══════════════════════════════════════════════════════════════
         ('breakout_volume_mult', 1.0),    # ✅ Volume >2× moyenne (plus sélectif)
+        ('use_breakout_adx_min',True),
         ('breakout_adx_min', 12),         # ✅ ADX >20 au breakout (vraie tendance)
         ('require_adx_rising', False),     # ✅ ADX doit être croissant
+        ('use_min_candle_body_pct', True),
         ('min_candle_body_pct', 0.2),     # Bougie doit avoir 30% de corps minimum
         
         # ═══════════════════════════════════════════════════════════════
@@ -324,25 +328,27 @@ class SqueezeMomentumStrategy(BaseStrategy):
             return False
         
         # 2. Volume moyen durant squeeze doit être < 90% de la SMA
-        avg_volume_ratio = sum(self.squeeze_volume_history) / len(self.squeeze_volume_history)
-        if avg_volume_ratio >= self.params.squeeze_volume_factor:
-            if self.params.debug_mode:
-                self.log(
-                    f"Squeeze invalide: Volume moyen {avg_volume_ratio:.2f} >= {self.params.squeeze_volume_factor}",
-                    level="DEBUG"
-                )
-            return False
-        
-        # 3. ATR moyen durant squeeze doit être contracté
-        if len(self.squeeze_atr_history) > 0:
-            avg_atr_ratio = sum(self.squeeze_atr_history) / len(self.squeeze_atr_history)
-            if avg_atr_ratio >= self.params.squeeze_atr_factor:
+        if self.params.use_squeeze_volume_factor:
+            avg_volume_ratio = sum(self.squeeze_volume_history) / len(self.squeeze_volume_history)
+            if avg_volume_ratio >= self.params.squeeze_volume_factor:
                 if self.params.debug_mode:
                     self.log(
-                        f"Squeeze invalide: ATR moyen {avg_atr_ratio:.2f} >= {self.params.squeeze_atr_factor}",
+                        f"Squeeze invalide: Volume moyen {avg_volume_ratio:.2f} >= {self.params.squeeze_volume_factor}",
                         level="DEBUG"
                     )
                 return False
+        
+        # 3. ATR moyen durant squeeze doit être contracté
+        if self.params.use_squeeze_atr_factor :
+            if len(self.squeeze_atr_history) > 0:
+                avg_atr_ratio = sum(self.squeeze_atr_history) / len(self.squeeze_atr_history)
+                if avg_atr_ratio >= self.params.squeeze_atr_factor:
+                    if self.params.debug_mode:
+                        self.log(
+                            f"Squeeze invalide: ATR moyen {avg_atr_ratio:.2f} >= {self.params.squeeze_atr_factor}",
+                            level="DEBUG"
+                        )
+                    return False
         
         return True
     
@@ -395,13 +401,14 @@ class SqueezeMomentumStrategy(BaseStrategy):
             return False, "Bougie baissière"
         
         # Vérifier que la bougie a un corps significatif (pas un doji)
-        candle_range = self.data.high[0] - self.data.low[0]
-        candle_body = abs(close - open_price)
-        if candle_range > 0:
-            body_pct = candle_body / candle_range
-            if body_pct < self.params.min_candle_body_pct:
-                return False, f"Corps de bougie trop petit ({body_pct*100:.1f}% < {self.params.min_candle_body_pct*100:.1f}%)"
-        
+        if self.params.use_min_candle_body_pct:
+            candle_range = self.data.high[0] - self.data.low[0]
+            candle_body = abs(close - open_price)
+            if candle_range > 0:
+                body_pct = candle_body / candle_range
+                if body_pct < self.params.min_candle_body_pct:
+                    return False, f"Corps de bougie trop petit ({body_pct*100:.1f}% < {self.params.min_candle_body_pct*100:.1f}%)"
+            
         # ═══════════════════════════════════════════════════════════════
         # 2. VOLUME: Explosif (>2× moyenne)
         # ═══════════════════════════════════════════════════════════════
@@ -413,10 +420,10 @@ class SqueezeMomentumStrategy(BaseStrategy):
         # ═══════════════════════════════════════════════════════════════
         # 3. ADX: Montre une vraie tendance (>20)
         # ═══════════════════════════════════════════════════════════════
-        
-        if self.adx[0] < self.params.breakout_adx_min:
-            return False, f"ADX trop bas ({self.adx[0]:.2f} < {self.params.breakout_adx_min})"
-        
+        if self.params.use_breakout_adx_min:
+            if self.adx[0] < self.params.breakout_adx_min:
+                return False, f"ADX trop bas ({self.adx[0]:.2f} < {self.params.breakout_adx_min})"
+            
         # ✅ NOUVEAU: ADX doit être CROISSANT (momentum)
         if self.params.require_adx_rising:
             if self.adx[0] <= self.adx[-1]:
@@ -563,10 +570,10 @@ class SqueezeMomentumStrategy(BaseStrategy):
         # ═══════════════════════════════════════════════════════════════
         # 5. ADX CHUTE (perte de momentum)
         # ═══════════════════════════════════════════════════════════════
-        
-        if self.adx[0] < self.params.breakout_adx_min * 0.7:  # ADX tombe sous 70% du minimum
-            return True, f"PERTE MOMENTUM - ADX chute @ {self.adx[0]:.2f}"
-        
+        if self.params.use_breakout_adx_min:
+            if self.adx[0] < self.params.breakout_adx_min * 0.7:  # ADX tombe sous 70% du minimum
+                return True, f"PERTE MOMENTUM - ADX chute @ {self.adx[0]:.2f}"
+            
         return False, ""
     
     # ═══════════════════════════════════════════════════════════════════════
