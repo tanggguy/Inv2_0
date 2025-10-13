@@ -122,7 +122,7 @@ strategies/
 ├── moving_average.py         # Stratégie MA
 ├── rsi_strategy.py          # Stratégie RSI
 ├── advanced_strategies.py   # Stratégies avancées
-├── masuperstrategie.py
+├── marsi.py
 ├── strategy_builder.py
 ├── squeezemomentum.md
 └── strategy_templates.py    # Templates
@@ -192,7 +192,7 @@ inv2_0/
 │   ├── advanced_strategies.py
 │   ├── base_strategy.py
 │   ├── bollingerbands.py
-│   ├── masuperstrategie.py
+│   ├── marsi.py
 │   ├── moving_average.py
 │   ├── rsi_strategy.py
 │   ├── squeezemomentumstrategy.py
@@ -200,13 +200,6 @@ inv2_0/
 │   └── strategy_templates.py
 │
 ├── tests/                # Tests unitaires et d'intégration
-│   ├── check_installation_paper_trading.py
-│   ├── test_config_adaptation.py
-│   ├── test_newoptimizer.py
-│   ├── test_optuna.py
-│   ├── test_paper_trading.py
-│   ├── test_parallel.py
-│   ├── ... (et autres fichiers de test)
 │
 ├── utils/                # Fonctions et classes utilitaires
 │   ├── helpers.py
