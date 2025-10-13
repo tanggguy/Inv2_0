@@ -17,8 +17,8 @@ def get_available_strategies() -> Dict[str, type]:
     
     # Import des stratégies de base
     try:
-        from strategies.masuperstrategie import MaSuperStrategie
-        strategies['MaSuperStrategie'] = MaSuperStrategie
+        from strategies.marsi import MaRSI
+        strategies['MaRSI'] = MaRSI
     except:
         pass
     

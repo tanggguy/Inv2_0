@@ -14,7 +14,7 @@ import seaborn as sns
 from datetime import datetime
 
 from scripts.optimize_strategy import StrategyOptimizer
-from strategies.masuperstrategie import MaSuperStrategie
+from strategies.marsi import MaSuperStrategie
 from config import settings
 
 def create_heatmap(results_df, param1, param2, metric='sharpe'):
@@ -114,7 +114,7 @@ def optimize_with_visualization():
     """)
     
     # Configuration
-    from strategies.masuperstrategie import MaSuperStrategie
+    from strategies.marsi import MaSuperStrategie
     from strategies.moving_average import MovingAverageStrategy
     
     optimizer = StrategyOptimizer(

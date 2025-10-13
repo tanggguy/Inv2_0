@@ -35,8 +35,8 @@ PAPER_TRADING_CONFIG = {
     "strategies": [
         {
             "name": "MovingAverage",
-            "enabled": True,
-            "symbols": ["AAPL", "MSFT", "GOOGL"],
+            "enabled": False,
+            "symbols": ["BTC-USD", "MSFT", "GOOGL"],
             "capital_allocation": 50000,
             "max_positions": 3,
             "params": {
@@ -48,20 +48,26 @@ PAPER_TRADING_CONFIG = {
             }
         },
         {
-            "name": "RSI",
+            "name": "RSITrailingStop",
             "enabled": True,
-            "symbols": ["NVDA", "AMZN"],
+            "symbols": ["NVDA", "AMZN","BTC-USD"],
             "capital_allocation": 30000,
             "max_positions": 2,
             "params": {
-                "rsi_period": 14,
+                "rsi_period": 10,
                 "rsi_oversold": 30,
-                "rsi_overbought": 70,
+                "rsi_overbought": 60,
                 "stop_loss_pct": 0.03,
+                "trailing_stop_pct": 0.02,
+                'use_take_profit' : False,
+                'use_stop_loss' : True,
+                'use_trailing_stop' : True,
+
+                "printlog": False,
             }
         },
         {
-            "name": "MACrossoverAdvanced",
+            "name": "MaRSI",
             "enabled": False,
             "symbols": ["SPY", "QQQ"],
             "capital_allocation": 20000,

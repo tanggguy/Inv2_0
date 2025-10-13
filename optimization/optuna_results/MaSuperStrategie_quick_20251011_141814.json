@@ -1,0 +1,13 @@
+{
+  "preset": "quick",
+  "strategy": "MaSuperStrategie",
+  "best_params": {
+    "best_params": {
+      "ma_period": 17,
+      "rsi_period": 7,
+      "stop_loss_pct": 0.015,
+      "trailing_stop_pct": 0.025,
+      "trailing_activation_pct": 0.015
+    },
+    "best_value": -Infinity,
+    "study": 

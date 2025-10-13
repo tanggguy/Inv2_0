@@ -10,9 +10,14 @@
       },
       "capital": 100000,
       "param_grid": {
-        "ma_period": [20, 50],
-        "rsi_period": [14],
-        "stop_loss_pct": [0.02]
+        
+      },
+      "optuna": {
+        "n_trials": 50,
+        "timeout": null,
+        "sampler": "tpe",
+        "pruner": "median",
+        "save_plots": false
       }
     },
     
@@ -26,10 +31,14 @@
       },
       "capital": 100000,
       "param_grid": {
-        "ma_period": [10, 20, 30, 50],
-        "rsi_period": [7, 14, 21],
-        "stop_loss_pct": [0.015, 0.02, 0.025],
-        "trailing_stop_pct": [0.025, 0.03, 0.035]
+        
+      },
+      "optuna": {
+        "n_trials": 100,
+        "timeout": null,
+        "sampler": "tpe",
+        "pruner": "median",
+        "save_plots": false
       }
     },
     
@@ -43,13 +52,32 @@
       },
       "capital": 100000,
       "param_grid": {
-        "ma_period": [10, 15, 20, 25, 30, 40, 50],
-        "rsi_period": [7, 10, 14, 21, 28],
-        "stop_loss_pct": [0.01, 0.015, 0.02, 0.025, 0.03],
-        "trailing_stop_pct": [0.02, 0.025, 0.03, 0.035, 0.04],
-        "trailing_activation_pct": [0.015, 0.02, 0.025]
+        
+      },
+      "optuna": {
+        "n_trials": 100,
+        "timeout": 3600,
+        "sampler": "tpe",
+        "pruner": "median",
+        "save_plots": false
       }
     },
+  
+  "optuna_defaults": {
+    "n_trials": 50,
+    "timeout": null,
+    "sampler": "tpe",
+    "pruner": "median",
+    "save_plots": false,
+    "multi_objective": false,
+    "n_jobs": -1
+  },
+  "walk_forward_defaults": {
+    "n_splits": 5,
+    "train_period_days": 180,
+    "test_period_days": 60,
+    "anchored": false
+  },
     
     "walk_forward_quick": {
       "name": "Walk-Forward Rapide",
@@ -65,9 +93,7 @@
         "out_sample_months": 3
       },
       "param_grid": {
-        "ma_period": [20, 30, 50],
-        "rsi_period": [14, 21],
-        "stop_loss_pct": [0.02, 0.025]
+        
       }
     },
     
@@ -85,9 +111,7 @@
         "out_sample_months": 18
       },
       "param_grid": {
-        "ma_period": [20, 30, 50],
-        "rsi_period": [7, 14, 21],
-        "stop_loss_pct": [0.015, 0.02, 0.025]
+        
       }
     }
   },
@@ -108,7 +132,7 @@
       }
     },
     
-    "MaSuperStrategie": {
+    "MaRSI": {
       "param_grid": {
         "ma_period": [10, 20, 30, 50],
         "rsi_period": [7, 14, 21],

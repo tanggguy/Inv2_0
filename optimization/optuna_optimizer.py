@@ -148,55 +148,91 @@ class OptunaOptimizer:
         
         return pruners[pruner_type]
     
-    def _suggest_params(self, trial: optuna.Trial) -> Dict[str, Any]:
+    def _suggest_params(self, trial) -> dict:
         """
-        Suggère des paramètres pour un essai
-        Compatible avec le format param_grid existant
+        Suggère des paramètres pour un trial Optuna
+        
+        Gère deux formats:
+        1. Liste: [val1, val2, val3]
+        2. Range: {type: 'int', low: 10, high: 100, step: 5}
+        
+        Args:
+            trial: Trial Optuna
+        
+        Returns:
+            Dict avec les paramètres suggérés
         """
         params = {}
         
         for param_name, param_values in self.param_grid.items():
-            if not param_values:
-                continue
             
-            # Détecter le type de paramètre
-            first_value = param_values[0]
+            # FORMAT 1: Liste de valeurs discrètes
+            if isinstance(param_values, list):
+                params[param_name] = trial.suggest_categorical(param_name, param_values)
             
-            if isinstance(first_value, bool):
-                # Paramètre booléen
-                params[param_name] = trial.suggest_categorical(
-                    param_name, 
-                    param_values
-                )
-            
-            elif isinstance(first_value, int):
-                # Paramètre entier
-                step = self._detect_step(param_values)
-                # Optuna n'accepte pas step=None pour les entiers, utiliser step=1 par défaut
-                params[param_name] = trial.suggest_int(
-                    param_name,
-                    min(param_values),
-                    max(param_values),
-                    step=step if step is not None else 1
-                )
-            
-            elif isinstance(first_value, float):
-                # Paramètre flottant
-                step = self._detect_step(param_values)
-                is_discrete = step is not None
+            # FORMAT 2: Dictionnaire avec type/low/high
+            elif isinstance(param_values, dict):
+                param_type = param_values.get('type', 'float')
                 
-                params[param_name] = trial.suggest_float(
-                    param_name,
-                    min(param_values),
-                    max(param_values),
-                    step=step if is_discrete else None
-                )
+                # Paramètres entiers
+                if param_type == 'int':
+                    low = int(param_values['low'])
+                    high = int(param_values['high'])
+                    step = int(param_values.get('step', 1))
+                    log = param_values.get('log', False)
+                    
+                    params[param_name] = trial.suggest_int(
+                        param_name, 
+                        low, 
+                        high, 
+                        step=step,
+                        log=log
+                    )
+                
+                # Paramètres flottants
+                elif param_type == 'float':
+                    low = float(param_values['low'])
+                    high = float(param_values['high'])
+                    step = param_values.get('step', None)
+                    log = param_values.get('log', False)
+                    
+                    if step is not None:
+                        params[param_name] = trial.suggest_float(
+                            param_name, 
+                            low, 
+                            high, 
+                            step=float(step),
+                            log=log
+                        )
+                    else:
+                        params[param_name] = trial.suggest_float(
+                            param_name, 
+                            low, 
+                            high,
+                            log=log
+                        )
+                
+                # Paramètres catégoriels
+                elif param_type == 'categorical':
+                    choices = param_values.get('choices', [])
+                    params[param_name] = trial.suggest_categorical(param_name, choices)
+                
+                else:
+                    # Type inconnu, utiliser float par défaut
+                    if self.logger:
+                        self.logger.warning(
+                            f"Type '{param_type}' inconnu pour '{param_name}', "
+                            f"utilisation de float par défaut"
+                        )
+                    low = float(param_values.get('low', 0))
+                    high = float(param_values.get('high', 1))
+                    params[param_name] = trial.suggest_float(param_name, low, high)
             
             else:
-                # Paramètre catégoriel (strings, etc.)
-                params[param_name] = trial.suggest_categorical(
-                    param_name,
-                    param_values
+                # Format invalide
+                raise ValueError(
+                    f"Format de paramètre invalide pour '{param_name}': {param_values}. "
+                    f"Attendu: liste ou dict avec 'type'/'low'/'high'"
                 )
         
         return params

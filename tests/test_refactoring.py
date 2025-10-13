@@ -17,7 +17,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from optimization.optimization_config import OptimizationConfig, load_preset
 from optimization.optimizer import UnifiedOptimizer
 from optimization.results_storage import ResultsStorage
-from strategies.masuperstrategie import MaSuperStrategie
+from strategies.marsi import MaSuperStrategie
 
 
 def test_config():

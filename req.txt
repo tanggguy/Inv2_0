@@ -1,9 +1,0 @@
-# Optuna et ses dépendances
-optuna==3.6.1
-plotly>=5.18.0  # Pour les visualisations Optuna
-scikit-learn>=1.3.0  # Utilisé par Optuna
-scipy>=1.11.0  # Pour les algorithmes d'optimisation
-
-# Optionnel mais recommandé
-optuna-dashboard>=0.15.1  # Interface web pour monitorer les études
-sqlalchemy>=2.0.0  # Pour persister les études Optuna

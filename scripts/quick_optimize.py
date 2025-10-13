@@ -15,7 +15,7 @@ from optimization.optimizer import UnifiedOptimizer
 from optimization.results_storage import ResultsStorage
 
 # Import des stratégies disponibles
-from strategies.masuperstrategie import MaSuperStrategie
+from strategies.marsi import MaRSI
 from strategies.moving_average import MovingAverageStrategy
 from strategies.rsi_strategy import RSIStrategy
 
@@ -45,7 +45,7 @@ def print_banner():
 def choose_strategy():
     """Permet de choisir une stratégie"""
     strategies = {
-        '1': ('MaSuperStrategie', MaSuperStrategie),
+        '1': ('MaRSI', MaRSI),
         '2': ('MovingAverage', MovingAverageStrategy),
         '3': ('RSI', RSIStrategy),
     }

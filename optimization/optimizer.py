@@ -33,7 +33,7 @@ from optimization.results_storage import ResultsStorage
 from optimization.optuna_optimizer import OptunaOptimizer
 # Import des workers (doivent être au niveau module pour pickling)
 from optimization.optimizer_worker import run_backtest_worker
-
+from utils.metrics_validator import safe_calculate_return , MetricsValidator
 logger = setup_logger("optimizer")
 
 
@@ -531,15 +531,18 @@ class UnifiedOptimizer:
             total_trades = trades.get('total', {}).get('total', 0)
             won_trades = trades.get('won', {}).get('total', 0)
             
+
             result = {
                 **params,
                 'sharpe': sharpe.get('sharperatio', 0) or 0,
-                'return': ((end_value - start_value) / start_value) * 100,
+                'return': safe_calculate_return(start_value, end_value),
                 'drawdown': drawdown.get('max', {}).get('drawdown', 0),
                 'trades': total_trades,
                 'win_rate': (won_trades / total_trades * 100) if total_trades > 0 else 0
             }
-            
+            # Valider et nettoyer les métriques
+            validator = MetricsValidator()
+            result = validator.validate_and_clean(result)
             return result
             
         except Exception as e:
@@ -769,7 +772,95 @@ class UnifiedOptimizer:
                 'best_out_sharpe': best_period['out_sharpe']
             }
         }
-    
+    def _analyze_optuna_results(self, optuna_results: Dict) -> Dict:
+        """
+        Analyse les résultats d'une optimisation Optuna
+        
+        Contrairement au Grid Search, Optuna ne sauvegarde que les scores (sharpe)
+        dans optimization_history. Il faut donc relancer un backtest complet avec
+        les meilleurs paramètres pour obtenir toutes les métriques.
+        
+        Args:
+            optuna_results: Résultats retournés par OptunaOptimizer.optimize()
+        
+        Returns:
+            Dict structuré avec 'best', 'all_results', 'statistics'
+        """
+        logger.info("\n📊 Analyse des résultats Optuna...")
+        
+        # Récupérer les meilleurs paramètres
+        best_params = optuna_results.get('best_params', {})
+        
+        if not best_params:
+            logger.error("❌ Aucun meilleur paramètre trouvé")
+            return {'run_id': self.run_id, 'best': {}, 'all_results': []}
+        
+        # ✅ SOLUTION: Relancer un backtest complet avec les meilleurs paramètres
+        # pour obtenir toutes les métriques (sharpe, return, drawdown, trades, etc.)
+        logger.info("🔄 Calcul des métriques complètes pour les meilleurs paramètres...")
+        
+        best_backtest_result = self._run_single_backtest(best_params)
+        
+        if not best_backtest_result:
+            logger.error("❌ Échec du backtest avec les meilleurs paramètres")
+            return {'run_id': self.run_id, 'best': {}, 'all_results': []}
+        
+        # Construire le résultat 'best' avec paramètres + métriques
+        self.best_result = {**best_params, **best_backtest_result}
+        
+        # Afficher les résultats
+        logger.info(f"\n{'='*80}")
+        logger.info("🏆 MEILLEURE COMBINAISON")
+        logger.info(f"{'='*80}")
+        logger.info(f"   Sharpe Ratio:  {best_backtest_result.get('sharpe', 0):.2f}")
+        logger.info(f"   Return:        {best_backtest_result.get('return', 0):.2f}%")
+        logger.info(f"   Drawdown:      {best_backtest_result.get('drawdown', 0):.2f}%")
+        logger.info(f"   Trades:        {best_backtest_result.get('trades', 0)}")
+        logger.info(f"   Win Rate:      {best_backtest_result.get('win_rate', 0):.2f}%")
+        
+        logger.info(f"\n{'='*80}")
+        logger.info("🎯 MEILLEURS PARAMÈTRES")
+        logger.info(f"{'='*80}")
+        for key, value in best_params.items():
+            logger.info(f"   {key:.<30} {value}")
+        
+        # Statistiques globales sur l'optimisation
+        optimization_history = optuna_results.get('optimization_history', [])
+        n_trials = optuna_results.get('n_trials', len(optimization_history))
+        
+        logger.info(f"\n{'='*80}")
+        logger.info("📊 STATISTIQUES OPTUNA")
+        logger.info(f"{'='*80}")
+        logger.info(f"   Total trials:          {n_trials}")
+        logger.info(f"   Best value (Sharpe):   {optuna_results.get('best_value', 0):.4f}")
+        
+        # Calculer des stats si on a l'historique
+        if optimization_history:
+            values = [h['value'] for h in optimization_history if h['value'] != float('-inf')]
+            if values:
+                import numpy as np
+                logger.info(f"   Sharpe moyen:          {np.mean(values):.2f}")
+                logger.info(f"   Sharpe max:            {np.max(values):.2f}")
+                logger.info(f"   Sharpe min:            {np.min(values):.2f}")
+                logger.info(f"   Écart-type:            {np.std(values):.2f}")
+        
+        # Construire le dictionnaire de résultats
+        return {
+            'run_id': self.run_id,
+            'strategy': self.strategy_name,
+            'optimization_type': self.optimization_type,
+            'parallel': self.use_parallel,
+            'best': self.best_result,
+            'all_results': optimization_history,  # Historique Optuna (trial, params, value)
+            'total_trials': n_trials,
+            'statistics': {
+                'best_value': optuna_results.get('best_value', 0),
+                'n_trials': n_trials,
+                'avg_sharpe': np.mean(values) if values else 0,
+                'max_sharpe': np.max(values) if values else 0,
+                'min_sharpe': np.min(values) if values else 0
+            }
+        }
     def _save_results(self, results: Dict):
         """Sauvegarde les résultats"""
         full_config = {
@@ -834,7 +925,7 @@ class UnifiedOptimizer:
             optuna_opt.save_visualizations()
         
         # Analyser et retourner
-        results = self._analyze_results()
+        results = self._analyze_optuna_results(optuna_results)
         results['param_importance'] = optuna_opt.get_importance()
         self._save_results(results)
         
@@ -866,14 +957,14 @@ if __name__ == "__main__":
     print("TEST UNIFIED OPTIMIZER - VERSION PARALLÉLISÉE")
     print("="*80)
     
-    from strategies.masuperstrategie import MaSuperStrategie
+    from strategies.marsi import MaRSI
     from optimization.optimization_config import load_preset
     
     print("\n🔬 Test Grid Search PARALLÈLE avec preset 'quick':\n")
     config = load_preset('quick')
     
     optimizer = UnifiedOptimizer(
-        MaSuperStrategie,
+        MaRSI,
         config,
         optimization_type='grid_search',
         use_parallel=True  # 🚀 PARALLÉLISATION ACTIVÉE

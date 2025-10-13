@@ -172,7 +172,7 @@ def main():
     """)
     
     # Exemple: Optimiser MaSuperStrategie
-    from strategies.masuperstrategie import MaSuperStrategie
+    from strategies.marsi import MaSuperStrategie
     from strategies.moving_average import MovingAverageStrategy
     
     optimizer = StrategyOptimizer(

@@ -14,7 +14,7 @@ from dateutil.relativedelta import relativedelta
 
 from scripts.optimize_strategy import StrategyOptimizer
 from backtesting.backtest_engine import BacktestEngine
-from strategies.masuperstrategie import MaSuperStrategie
+from strategies.marsi import MaSuperStrategie
 from monitoring.logger import setup_logger
 
 logger = setup_logger("walk_forward")

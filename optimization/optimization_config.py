@@ -94,7 +94,7 @@ class OptimizationConfig:
         - La grille de paramètres spécifique à la stratégie (param_grid)
         
         Args:
-            strategy_name: Nom de la stratégie (ex: 'MovingAverage', 'RSI', 'MaSuperStrategie')
+            strategy_name: Nom de la stratégie (ex: 'MovingAverage', 'RSI', 'MaRSI')
             preset_name: Nom du preset (ex: 'standard', 'quick', 'exhaustive')
             override_params: Si True, remplace param_grid par strategy_defaults
         

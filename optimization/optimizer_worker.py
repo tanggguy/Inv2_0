@@ -12,7 +12,7 @@ from typing import Dict, Optional
 
 from config import settings
 from data.data_fetcher import create_data_feed
-
+from utils.metrics_validator import safe_calculate_return , MetricsValidator
 
 def run_backtest_worker(params: Dict,
                        preloaded_data: Dict[str, pd.DataFrame],
@@ -83,7 +83,10 @@ def run_backtest_worker(params: Dict,
         
         # 🚀 EARLY STOPPING OPTIONNEL
         # Filtrer les résultats catastrophiques rapidement
-        total_return = ((end_value - start_value) / start_value) * 100
+        
+
+        total_return = safe_calculate_return(start_value, end_value)
+
         
         if total_return < -50:  # Perte > 50%
             return None
@@ -100,7 +103,8 @@ def run_backtest_worker(params: Dict,
             'trades': total_trades,
             'win_rate': (won_trades / total_trades * 100) if total_trades > 0 else 0
         }
-        
+        validator = MetricsValidator()
+        result = validator.validate_and_clean(result)
         return result
         
     except Exception as e:
@@ -210,7 +214,7 @@ def run_backtest_worker_with_dates(params: Dict,
         result = {
             **params,
             'sharpe': sharpe.get('sharperatio', 0) or 0,
-            'return': ((end_value - start_value) / start_value) * 100,
+            'return': ((end_value - start_value) / start_value) * 100 if start_value > 0 else 0,
             'drawdown': drawdown.get('max', {}).get('drawdown', 0),
             'trades': total_trades,
             'win_rate': (won_trades / total_trades * 100) if total_trades > 0 else 0

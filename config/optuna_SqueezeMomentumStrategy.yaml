@@ -1,0 +1,370 @@
+# ============================================================================
+# 🔬 CONFIGURATION D'OPTIMISATION OPTUNA
+# ============================================================================
+# 
+# Ce fichier définit la configuration complète pour l'optimisation Optuna
+# d'une stratégie de trading.
+#
+# Structure:
+#   - strategy: Définition de la stratégie à optimiser
+#   - config: Configuration générale (symboles, période, capital)
+#   - optuna: Paramètres de l'optimiseur Optuna
+#   - param_grid: Grille des paramètres à optimiser
+#   - profiles: Profils prédéfinis (quick/dev/prod)
+#
+# Usage:
+#   python scripts/run_optuna_from_yaml.py optimization_configs/ma_strategy.yaml
+#   python scripts/run_optuna_from_yaml.py optimization_configs/ma_strategy.yaml --profile prod
+#
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+# 🎯 STRATÉGIE À OPTIMISER
+# ----------------------------------------------------------------------------
+strategy:
+  # Chemin Python complet vers la classe de stratégie
+  # Format: module.sous_module.NomClasse
+  class: "strategies.squeezemomentumstrategy.SqueezeMomentumStrategy"
+  
+  # Nom de la stratégie (pour les logs et rapports)
+  name: "SqueezeMomentumStrategy"
+  
+  # Description optionnelle
+  description: "Stratégie combinant MA, RSI avec trailing stop"
+
+# ----------------------------------------------------------------------------
+# ⚙️ CONFIGURATION GÉNÉRALE
+# ----------------------------------------------------------------------------
+config:
+  # Symboles à trader (liste)
+  symbols:
+    - AAPL
+    - MSFT
+    - GOOGL
+  
+  # Période de test
+  period:
+    start: "2017-01-01"
+    end: "2024-01-01"
+  
+  # Capital initial en USD
+  capital: 100000
+
+# ----------------------------------------------------------------------------
+# 🔬 PARAMÈTRES OPTUNA
+# ----------------------------------------------------------------------------
+optuna:
+  # Nombre d'essais (trials)
+  # Plus élevé = meilleure exploration mais plus long
+  # Recommandé: 50-200 pour tests, 500-1000+ pour production
+  n_trials: 200
+  
+  # Timeout en secondes (null = pas de limite)
+  # Exemple: 3600 = 1 heure
+  timeout: null
+  
+  # Algorithme de sampling
+  # Options:
+  #   - tpe: Tree-structured Parzen Estimator (recommandé, intelligent)
+  #   - random: Échantillonnage aléatoire
+  #   - cmaes: Covariance Matrix Adaptation Evolution Strategy
+  #   - grid: Grid search (exhaustif)
+  sampler: "tpe"
+  
+  # Stratégie de pruning (arrêt précoce)
+  # Options:
+  #   - median: Arrête si en-dessous de la médiane
+  #   - successive_halving: Très agressif
+  #   - hyperband: Équilibré
+  #   - none: Pas de pruning
+  pruner: "median"
+  
+  # Nombre de jobs parallèles
+  # -1 = utiliser tous les CPU disponibles
+  # 1 = séquentiel
+  # N = N processus en parallèle
+  n_jobs: 7
+  
+  # Sauvegarder les visualisations HTML
+  save_plots: false
+  
+  # Métrique à optimiser (pour référence, géré automatiquement) : sharpe,return,drawdown
+  optimize_metric: "sharpe"
+  
+  # Direction de l'optimisation
+  direction: "maximize"
+
+# ----------------------------------------------------------------------------
+# ⚙️ GRILLE DE PARAMÈTRES À OPTIMISER
+# ----------------------------------------------------------------------------
+# 
+# Format pour chaque paramètre:
+#
+# 1. Liste de valeurs discrètes:
+#    param_name: [val1, val2, val3, ...]
+#
+# 2. Range continu (pour Optuna):
+#    param_name:
+#      type: "int" ou "float"
+#      low: valeur_min
+#      high: valeur_max
+#      step: pas (optionnel pour int)
+#      log: true/false (échelle logarithmique, optionnel)
+#
+# 3. Catégorique:
+#    param_name: ["option1", "option2", "option3"]
+#
+# ----------------------------------------------------------------------------
+param_grid:
+  # Période  
+  bb_period:
+    type: "int"
+    low: 5
+    high: 20
+    step: 1
+  # Écart-type pour les bandes de Bollinger
+  bb_std :
+    type: "float"
+    low: 1.5
+    high: 2.5
+    step: 0.2
+  #
+  keltner_period:
+    type: "int"
+    low: 15
+    high: 25
+    step: 2
+  # 
+  keltner_mult:
+    type: "float"
+    low: 1.5
+    high: 2.5
+    step: 0.2
+  #
+  atr_period:
+    type: "int"
+    low: 10
+    high: 20
+    step: 2
+  #
+  volume_period:
+    type: "int"
+    low: 10
+    high: 30
+    step: 2
+  #
+  adx_period:
+    type: "int"
+    low: 10
+    high: 20
+    step: 2
+
+  # SQUEEZE
+  min_squeeze_days:
+    type: "int"
+    low: 2
+    high: 8
+    step: 1
+  # 
+  squeeze_adx_max:
+    type: "float"
+    low: 16.0
+    high: 40.0
+    step: 2.0
+  #
+  squeeze_volume_factor:
+    type: "float"
+    low: 0.8
+    high: 1.6
+    step: 0.2
+  #
+  squeeze_atr_factor:
+    type: "float"
+    low: 0.8
+    high: 1.6
+    step: 0.2
+
+  #BREAKOUT
+  breakout_volume_mult:
+    type: "float"
+    low: 0.8
+    high: 2.0
+    step: 0.2
+  #
+  breakout_adx_min:
+    type: "float"
+    low: 10.0
+    high: 30.0
+    step: 5.0
+  #
+  min_candle_body_pct:
+    type: "float"
+    low: 0.2
+    high: 0.6
+    step: 0.1
+
+# ----------------------------------------------------------------------------
+# 🎯 PROFILS PRÉDÉFINIS
+# ----------------------------------------------------------------------------
+# 
+# Les profils permettent de définir des configurations alternatives
+# qui surchargent la configuration de base.
+#
+# Usage:
+#   python scripts/run_optuna_from_yaml.py config.yaml --profile quick
+#
+# ----------------------------------------------------------------------------
+profiles:
+  # -------------------------------------------------------------------------
+  # ⚡ QUICK - Test rapide pour vérifier que tout fonctionne
+  # -------------------------------------------------------------------------
+  quick:
+    description: "Test rapide - 1 symbole, période courte, peu de trials"
+    
+    config:
+      symbols:
+        - AAPL
+      period:
+        start: "2023-01-01"
+        end: "2024-01-01"
+      capital: 100000
+    
+    optuna:
+      n_trials: 20
+      timeout: 300  # 5 minutes max
+      sampler: "random"
+      pruner: "median"
+      n_jobs: 4
+      save_plots: false
+    
+    # Grille réduite pour tests rapides
+    param_grid:
+      ma_period: [20, 50]
+      rsi_period: [14, 21]
+      stop_loss_pct: [0.02, 0.03]
+      trailing_stop_pct: [0.03]
+      trailing_activation_pct: [0.02]
+  
+  # -------------------------------------------------------------------------
+  # 🔧 DEV - Développement et mise au point
+  # -------------------------------------------------------------------------
+  dev:
+    description: "Développement - Équilibre entre vitesse et qualité"
+    
+    config:
+      symbols:
+        - AAPL
+        - MSFT
+      period:
+        start: "2022-01-01"
+        end: "2024-01-01"
+      capital: 100000
+    
+    optuna:
+      n_trials: 100
+      timeout: 1800  # 30 minutes
+      sampler: "tpe"
+      pruner: "median"
+      n_jobs: -1
+      save_plots: true
+    
+    # Grille modérée
+    param_grid:
+      ma_period:
+        type: "int"
+        low: 10
+        high: 100
+        step: 10
+      rsi_period:
+        type: "int"
+        low: 10
+        high: 25
+        step: 5
+      stop_loss_pct:
+        type: "float"
+        low: 0.015
+        high: 0.04
+        step: 0.005
+      trailing_stop_pct:
+        type: "float"
+        low: 0.025
+        high: 0.05
+        step: 0.005
+      trailing_activation_pct:
+        type: "float"
+        low: 0.01
+        high: 0.03
+        step: 0.005
+  
+  # -------------------------------------------------------------------------
+  # 🚀 PROD - Production complète avec exploration maximale
+  # -------------------------------------------------------------------------
+  prod:
+    description: "Production - Exploration exhaustive, résultats optimaux"
+    
+    config:
+      symbols:
+        - AAPL
+        - MSFT
+        - GOOGL
+        - AMZN
+        - META
+      period:
+        start: "2018-01-01"
+        end: "2024-01-01"
+      capital: 100000
+    
+    optuna:
+      n_trials: 500
+      timeout: null  # Pas de limite
+      sampler: "tpe"
+      pruner: "median"
+      n_jobs: -1
+      save_plots: true
+    
+    # Grille complète (utilise celle définie dans param_grid de base)
+    # On peut aussi la surcharger ici si besoin
+
+# ----------------------------------------------------------------------------
+# 📝 NOTES ET CONSEILS
+# ----------------------------------------------------------------------------
+#
+# 1. CHOIX DU PROFIL:
+#    - quick: Vérification rapide (5-10 min)
+#    - dev: Développement itératif (30 min - 2h)
+#    - prod: Optimisation finale (2h - 8h+)
+#
+# 2. NOMBRE DE TRIALS:
+#    - Formule approximative: n_trials ≈ 10 × nombre_de_paramètres
+#    - Pour 5 paramètres: 50-100 trials minimum
+#
+# 3. SAMPLER:
+#    - TPE: Le meilleur choix dans 95% des cas
+#    - Random: Utile pour établir une baseline
+#
+# 4. PRUNER:
+#    - Median: Bon compromis vitesse/exploration
+#    - None: Si vous avez du temps et voulez tout explorer
+#
+# 5. PARALLÉLISATION:
+#    - n_jobs=-1: Utilise tous les CPU (recommandé)
+#    - Attention: Chaque job consomme de la RAM
+#
+# 6. VISUALISATION DES RÉSULTATS:
+#    Après l'optimisation, lancez:
+#    $ optuna-dashboard sqlite:///optimization/optuna_studies/optuna.db
+#    
+#    Puis ouvrez http://localhost:8080 dans votre navigateur
+#
+# 7. DÉFINITION DES RANGES:
+#    - Commencez large, puis affinez
+#    - Utilisez 'log: true' pour les paramètres multiplicatifs
+#    - step optionnel pour les entiers (sinon 1 par défaut)
+#
+# 8. GESTION MÉMOIRE:
+#    Si vous manquez de RAM avec n_jobs=-1:
+#    - Réduisez n_jobs à 4-8
+#    - Réduisez la période de test
+#    - Réduisez le nombre de symboles
+#
+# ============================================================================

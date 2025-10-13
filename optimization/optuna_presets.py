@@ -38,7 +38,7 @@ OPTUNA_PRESETS = {
         'symbol': 'AAPL',
         'timeframe': '1H',
         'period': {
-            'start': '2022-01-01',
+            'start': '2018-01-01',
             'end': '2024-01-01'
         },
         'cash': 100000,

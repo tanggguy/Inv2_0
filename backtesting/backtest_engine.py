@@ -65,13 +65,14 @@ class BacktestEngine:
                 "MovingAverage": ("strategies.moving_average", "MovingAverageStrategy"),
                 "RSI": ("strategies.rsi_strategy", "RSIStrategy"),
                 "MACrossoverAdvanced": ("strategies.advanced_strategies", "MACrossoverAdvanced"),
-                "RSITrailingStop": ("strategies.advanced_strategies", "RSITrailingStop"),
+                "RSITrailingStop": ("strategies.rsitrailingstop", "RSITrailingStop"),
                 "BreakoutATRStop": ("strategies.advanced_strategies", "BreakoutATRStop"),
                 "MomentumMultipleStops": ("strategies.advanced_strategies", "MomentumMultipleStops"),
                 "MaSuperStrategie": ("strategies.masuperstrategie", "MaSuperStrategie"),
                 "BollingerBandsStrategy": ("strategies.bollingerbands", "BollingerBandsStrategy"),
                 "MeanReversionStrategy": ("strategies.bollingerbands", "MeanReversionStrategy"),
                 "SqueezeMomentumStrategy": ("strategies.squeezemomentumstrategy", "SqueezeMomentumStrategy"),
+                
             }
             
             # Vérifier d'abord les stratégies hardcodées
@@ -184,7 +185,7 @@ class BacktestEngine:
             trades = self.strategy_instance.analyzers.trades.get_analysis()
             
             # Calculer les métriques
-            total_return = ((end_value - start_value) / start_value) * 100
+            total_return = ((end_value - start_value) / start_value) * 100 if start_value != 0 else 0
             
             # Nombre de trades
             total_trades = trades.get('total', {}).get('total', 0)

@@ -17,7 +17,7 @@ from datetime import datetime
 from multiprocessing import cpu_count
 from optimization.optimizer import UnifiedOptimizer
 from optimization.optimization_config import load_preset
-from strategies.masuperstrategie import MaSuperStrategie
+from strategies.marsi import MaSuperStrategie
 
 
 def print_header(title, char="="):

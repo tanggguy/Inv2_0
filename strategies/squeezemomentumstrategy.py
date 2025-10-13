@@ -97,10 +97,10 @@ class SqueezeMomentumStrategy(BaseStrategy):
         # ═══════════════════════════════════════════════════════════════
         # PÉRIODES DES INDICATEURS
         # ═══════════════════════════════════════════════════════════════
-        ('bb_period', 20),
-        ('bb_std', 2.0),
+        ('bb_period', 13),
+        ('bb_std', 1.8),
         ('keltner_period', 20),
-        ('keltner_mult', 2.0),
+        ('keltner_mult', 1.8),
         ('atr_period', 14),
         ('volume_period', 20),
         ('adx_period', 14),
@@ -110,7 +110,8 @@ class SqueezeMomentumStrategy(BaseStrategy):
         # ═══════════════════════════════════════════════════════════════
         # CONDITIONS SQUEEZE (CORRIGÉES)
         # ═══════════════════════════════════════════════════════════════
-        ('min_squeeze_days', 3),          # Minimum 5 jours de squeeze consécutifs
+        ('min_squeeze_days', 6),          # Minimum 5 jours de squeeze consécutifs
+        ('max_days_since_squeeze', 5),   # Entrer max 3 jours après fin squeeze
         ('squeeze_adx_max', 35),          # ✅ ADX < 25 durant squeeze (moins restrictif)
         ('use_squeeze_volume_factor', True),   # Volume moyen < 90% de la SMA
         ('squeeze_volume_factor', 1.2),   # Volume moyen < 90% de la SMA
@@ -151,7 +152,7 @@ class SqueezeMomentumStrategy(BaseStrategy):
         # LOGGING
         # ═══════════════════════════════════════════════════════════════
         ('printlog', True),
-        ('debug_mode', False),            # Logs détaillés pour debugging
+        ('debug_mode', True),            # Logs détaillés pour debugging
     )
     
     def __init__(self):
@@ -727,7 +728,7 @@ class SqueezeMomentumStrategy(BaseStrategy):
                 days_since_squeeze = (
                     self.data.datetime.date(0) - self.last_squeeze_end_date
                 ).days
-                if days_since_squeeze > 5:
+                if days_since_squeeze > self.params.max_days_since_squeeze:
                     if self.params.debug_mode:
                         self.log(
                             f"Squeeze trop ancien ({days_since_squeeze} jours)",

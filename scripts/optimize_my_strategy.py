@@ -8,7 +8,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from scripts.optimize_strategy import StrategyOptimizer
-from strategies.masuperstrategie import MaSuperStrategie
+from strategies.marsi import MaSuperStrategie
 
 def optimize_my_strategy():
     """Optimise MaSuperStrategie avec configuration avancée"""
