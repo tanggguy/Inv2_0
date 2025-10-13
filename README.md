@@ -22,8 +22,10 @@ pip freeze > requirements.txt
 pytest
 pytest -v
 # Génère un rapport HTML de couverture
-pytest --cov=inv2_0 --cov-report=html
+pytest --cov=backtesting --cov-report=html
+pytest --cov=stategies
 ```
+
 ## Maintenabilité
 ```bash
 # Pour formater tous les fichiers
