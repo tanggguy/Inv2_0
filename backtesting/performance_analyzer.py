@@ -1,6 +1,7 @@
 """
 Analyse des performances et génération de rapports
 """
+
 import json
 from datetime import datetime
 from pathlib import Path
@@ -13,12 +14,12 @@ logger = setup_logger("performance")
 
 class PerformanceAnalyzer:
     """Analyse les performances d'un backtest"""
-    
+
     def __init__(self, results, strategy_name):
         self.results = results
         self.strategy_name = strategy_name
         self.timestamp = datetime.now()
-    
+
     def generate_report(self):
         """Génère un rapport complet"""
         report_filename = (
@@ -26,22 +27,22 @@ class PerformanceAnalyzer:
             f"{self.timestamp.strftime('%Y%m%d_%H%M%S')}.txt"
         )
         report_path = settings.RESULTS_DIR / report_filename
-        
-        with open(report_path, 'w', encoding='utf-8') as f:
+
+        with open(report_path, "w", encoding="utf-8") as f:
             f.write(self._format_report())
-        
+
         # Sauvegarder aussi en JSON
-        json_path = report_path.with_suffix('.json')
-        with open(json_path, 'w', encoding='utf-8') as f:
+        json_path = report_path.with_suffix(".json")
+        with open(json_path, "w", encoding="utf-8") as f:
             json.dump(self.results, f, indent=2)
-        
+
         logger.info(f"Rapport sauvegardé: {report_path}")
         return report_path
-    
+
     def _format_report(self):
         """Formate le rapport en texte"""
         r = self.results
-        
+
         report = f"""
 {'='*80}
 RAPPORT DE BACKTEST - {self.strategy_name}
@@ -72,28 +73,28 @@ Perte Moyenne:          ${r['avg_loss']:>15.2f}
 ÉVALUATION
 {'='*80}
 """
-        
+
         # Évaluation de la performance
-        if r['sharpe_ratio'] > 2:
+        if r["sharpe_ratio"] > 2:
             report += "Performance: EXCELLENTE ⭐⭐⭐⭐⭐\n"
-        elif r['sharpe_ratio'] > 1:
+        elif r["sharpe_ratio"] > 1:
             report += "Performance: BONNE ⭐⭐⭐⭐\n"
-        elif r['sharpe_ratio'] > 0.5:
+        elif r["sharpe_ratio"] > 0.5:
             report += "Performance: ACCEPTABLE ⭐⭐⭐\n"
-        elif r['sharpe_ratio'] > 0:
+        elif r["sharpe_ratio"] > 0:
             report += "Performance: FAIBLE ⭐⭐\n"
         else:
             report += "Performance: MAUVAISE ⭐\n"
-        
+
         report += f"\n{'='*80}\n"
-        
+
         return report
-    
+
     def get_metrics_summary(self):
         """Retourne un résumé des métriques principales"""
         return {
-            'return': self.results['total_return'],
-            'sharpe': self.results['sharpe_ratio'],
-            'max_dd': self.results['max_drawdown'],
-            'win_rate': self.results['win_rate'],
+            "return": self.results["total_return"],
+            "sharpe": self.results["sharpe_ratio"],
+            "max_dd": self.results["max_drawdown"],
+            "win_rate": self.results["win_rate"],
         }

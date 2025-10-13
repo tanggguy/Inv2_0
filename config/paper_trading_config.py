@@ -1,6 +1,7 @@
 """
 Configuration du module Paper Trading avec Alpaca
 """
+
 import os
 from pathlib import Path
 from dotenv import load_dotenv
@@ -18,7 +19,6 @@ PAPER_TRADING_CONFIG = {
         "retry_attempts": 3,
         "timeout": 30,
     },
-    
     # ========== DONNÉES TEMPS RÉEL ==========
     "data": {
         "timeframe": "1H",  # Barres 1 heure
@@ -30,7 +30,6 @@ PAPER_TRADING_CONFIG = {
         "websocket_ping_interval": 30,
         "cache_enabled": True,
     },
-    
     # ========== MULTI-STRATÉGIES ==========
     "strategies": [
         {
@@ -45,12 +44,12 @@ PAPER_TRADING_CONFIG = {
                 "ma_slow": 30,
                 "stop_loss_pct": 0.02,
                 "take_profit_pct": 0.05,
-            }
+            },
         },
         {
             "name": "RSITrailingStop",
             "enabled": True,
-            "symbols": ["NVDA", "AMZN","BTC-USD"],
+            "symbols": ["NVDA", "AMZN", "BTC-USD"],
             "capital_allocation": 30000,
             "max_positions": 2,
             "params": {
@@ -59,12 +58,11 @@ PAPER_TRADING_CONFIG = {
                 "rsi_overbought": 60,
                 "stop_loss_pct": 0.03,
                 "trailing_stop_pct": 0.02,
-                'use_take_profit' : False,
-                'use_stop_loss' : True,
-                'use_trailing_stop' : True,
-
+                "use_take_profit": False,
+                "use_stop_loss": True,
+                "use_trailing_stop": True,
                 "printlog": False,
-            }
+            },
         },
         {
             "name": "MaRSI",
@@ -76,10 +74,9 @@ PAPER_TRADING_CONFIG = {
                 "fast_period": 12,
                 "slow_period": 26,
                 "signal_period": 9,
-            }
-        }
+            },
+        },
     ],
-    
     # ========== CIRCUIT BREAKERS ==========
     "circuit_breakers": {
         "enabled": True,
@@ -94,7 +91,6 @@ PAPER_TRADING_CONFIG = {
         "after_hours_allowed": False,
         "check_interval_seconds": 60,
     },
-    
     # ========== SAUVEGARDE ÉTAT PORTEFEUILLE ==========
     "portfolio_state": {
         "enabled": True,
@@ -106,7 +102,6 @@ PAPER_TRADING_CONFIG = {
         "save_on_trade": True,
         "save_on_shutdown": True,
     },
-    
     # ========== NOTIFICATIONS ==========
     "notifications": {
         "telegram_enabled": os.getenv("TELEGRAM_ENABLED", "false").lower() == "true",
@@ -117,7 +112,6 @@ PAPER_TRADING_CONFIG = {
         "telegram_on_error": True,
         "telegram_daily_summary": True,
         "telegram_summary_time": "16:00",  # Heure du résumé quotidien
-        
         "email_enabled": os.getenv("EMAIL_ENABLED", "false").lower() == "true",
         "email_from": os.getenv("EMAIL_FROM"),
         "email_to": os.getenv("EMAIL_TO"),
@@ -127,7 +121,6 @@ PAPER_TRADING_CONFIG = {
         "email_password": os.getenv("EMAIL_PASSWORD"),
         "email_daily_summary": False,
     },
-    
     # ========== MONITORING ==========
     "monitoring": {
         "dashboard_enabled": True,
@@ -137,7 +130,6 @@ PAPER_TRADING_CONFIG = {
         "log_trades_to_db": True,
         "database_path": Path("data_cache/paper_trading.db"),
     },
-    
     # ========== EXÉCUTION ==========
     "execution": {
         "order_timeout_seconds": 30,
@@ -148,7 +140,6 @@ PAPER_TRADING_CONFIG = {
         "min_order_value": 100,  # Valeur minimale d'ordre en $
         "max_position_pct": 0.25,  # 25% max par position
     },
-    
     # ========== HEURES DE MARCHÉ ==========
     "market_hours": {
         "timezone": "US/Eastern",
@@ -159,27 +150,33 @@ PAPER_TRADING_CONFIG = {
         "after_hours_open": "16:00",
         "after_hours_close": "20:00",
         "trading_days": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-    }
+    },
 }
+
 
 def get_paper_config():
     """Retourne la configuration complète du paper trading"""
     return PAPER_TRADING_CONFIG
 
+
 def validate_config():
     """Valide la configuration"""
     config = PAPER_TRADING_CONFIG
-    
+
     # Vérifier les clés API Alpaca
     if not config["alpaca"]["api_key"] or not config["alpaca"]["secret_key"]:
         raise ValueError("Les clés API Alpaca sont requises dans le fichier .env")
-    
+
     # Vérifier l'allocation de capital
-    total_allocation = sum(s["capital_allocation"] for s in config["strategies"] if s["enabled"])
+    total_allocation = sum(
+        s["capital_allocation"] for s in config["strategies"] if s["enabled"]
+    )
     if total_allocation <= 0:
-        raise ValueError("Au moins une stratégie doit être activée avec du capital alloué")
-    
+        raise ValueError(
+            "Au moins une stratégie doit être activée avec du capital alloué"
+        )
+
     # Créer les dossiers nécessaires
     config["portfolio_state"]["backup_dir"].mkdir(parents=True, exist_ok=True)
-    
+
     return True

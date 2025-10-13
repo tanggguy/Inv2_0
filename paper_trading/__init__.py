@@ -12,15 +12,15 @@ from .portfolio_state import PortfolioStateManager
 from .circuit_breaker import CircuitBreaker
 from .multi_strategy_runner import MultiStrategyRunner
 
-__version__ = '1.0.0'
-__author__ = 'Trading System'
+__version__ = "1.0.0"
+__author__ = "Trading System"
 
 __all__ = [
-    'PaperTradingEngine',
-    'AlpacaStore',
-    'AlpacaBroker',
-    'AlpacaData',
-    'PortfolioStateManager',
-    'CircuitBreaker',
-    'MultiStrategyRunner',
+    "PaperTradingEngine",
+    "AlpacaStore",
+    "AlpacaBroker",
+    "AlpacaData",
+    "PortfolioStateManager",
+    "CircuitBreaker",
+    "MultiStrategyRunner",
 ]

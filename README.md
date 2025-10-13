@@ -7,15 +7,29 @@ https://github.com/tanggguy/Inv2_0.git
 - Optimisation (optuna)
 - Paper trading (alpaca)
 
-## 🛠️ Installation
 
-### 1. Setup
+
+## Setup
 ```bash
 source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
-
-
+# Test
+```bash
+pytest
+pytest -v
+# Génère un rapport HTML de couverture
+pytest --cov=inv2_0 --cov-report=html
+```
+## Maintenabilité
+```bash
+# Pour formater tous les fichiers
+black .
+# Vérifier le formatage sans modifier
+black . --check
+# Pour vérifier les erreurs de style
+flake8 .
+```
 ## Utilisation
 
 /scripts

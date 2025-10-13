@@ -9,40 +9,40 @@ from typing import Any, Dict, List
 
 def init_session_state():
     """Initialise le session state avec les valeurs par défaut"""
-    
+
     # Optimisation en cours
-    if 'optimization_running' not in st.session_state:
+    if "optimization_running" not in st.session_state:
         st.session_state.optimization_running = False
-    
-    if 'current_run_id' not in st.session_state:
+
+    if "current_run_id" not in st.session_state:
         st.session_state.current_run_id = None
-    
-    if 'optimization_progress' not in st.session_state:
+
+    if "optimization_progress" not in st.session_state:
         st.session_state.optimization_progress = 0.0
-    
+
     # Sélections
-    if 'selected_runs' not in st.session_state:
+    if "selected_runs" not in st.session_state:
         st.session_state.selected_runs = []
-    
-    if 'active_run' not in st.session_state:
+
+    if "active_run" not in st.session_state:
         st.session_state.active_run = None
-    
+
     # Configuration
-    if 'selected_strategy' not in st.session_state:
+    if "selected_strategy" not in st.session_state:
         st.session_state.selected_strategy = None
-    
-    if 'selected_preset' not in st.session_state:
-        st.session_state.selected_preset = 'standard'
-    
-    if 'custom_config' not in st.session_state:
+
+    if "selected_preset" not in st.session_state:
+        st.session_state.selected_preset = "standard"
+
+    if "custom_config" not in st.session_state:
         st.session_state.custom_config = {}
-    
+
     # Résultats temporaires
-    if 'last_optimization_results' not in st.session_state:
+    if "last_optimization_results" not in st.session_state:
         st.session_state.last_optimization_results = None
-    
+
     # Filtres
-    if 'history_filters' not in st.session_state:
+    if "history_filters" not in st.session_state:
         st.session_state.history_filters = {}
 
 

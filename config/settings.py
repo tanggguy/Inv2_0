@@ -1,6 +1,7 @@
 """
 Configuration globale du système de trading
 """
+
 import os
 from pathlib import Path
 from dotenv import load_dotenv
@@ -91,6 +92,7 @@ AVAILABLE_STRATEGIES = [
 
 # Symboles par défaut
 DEFAULT_SYMBOLS = ["AAPL", "MSFT", "GOOGL", "AMZN"]
+
 
 def get_config():
     """Retourne la configuration complète"""
