@@ -1,0 +1,87 @@
+# Makefile pour les tests du module backtesting
+
+.PHONY: help test test-all test-engine test-analyzer test-coverage test-quick test-verbose clean
+
+# Couleurs
+BLUE := \033[0;34m
+GREEN := \033[0;32m
+NC := \033[0m # No Color
+
+help: ## Afficher cette aide
+	@echo "$(BLUE)Commandes disponibles:$(NC)"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(GREEN)%-20s$(NC) %s\n", $$1, $$2}'
+
+install-test-deps: ## Installer les dépendances de test
+	pip install -r requirements-test.txt
+
+test: test-all ## Exécuter tous les tests (alias)
+
+test-all: ## Exécuter tous les tests
+	@echo "$(BLUE)🧪 Exécution de tous les tests...$(NC)"
+	pytest tests/backtesting/ -v
+
+test-engine: ## Tester BacktestEngine uniquement
+	@echo "$(BLUE)🧪 Test de BacktestEngine...$(NC)"
+	pytest tests/backtesting/test_backtest_engine.py -v
+
+test-analyzer: ## Tester PerformanceAnalyzer uniquement
+	@echo "$(BLUE)🧪 Test de PerformanceAnalyzer...$(NC)"
+	pytest tests/backtesting/test_performance_analyzer.py -v
+
+test-coverage: ## Exécuter les tests avec couverture de code
+	@echo "$(BLUE)🧪 Tests avec couverture...$(NC)"
+	pytest tests/backtesting/ --cov=backtesting --cov-report=html --cov-report=term-missing
+	@echo "$(GREEN)✅ Rapport disponible: htmlcov/index.html$(NC)"
+
+test-quick: ## Tests rapides sans détails
+	@echo "$(BLUE)⚡ Tests rapides...$(NC)"
+	pytest tests/backtesting/ -q --tb=line
+
+test-verbose: ## Tests en mode verbeux
+	@echo "$(BLUE)🔍 Tests verbeux...$(NC)"
+	pytest tests/backtesting/ -vv -s
+
+test-parallel: ## Exécuter les tests en parallèle
+	@echo "$(BLUE)⚡ Tests en parallèle...$(NC)"
+	pytest tests/backtesting/ -n auto
+
+test-failed: ## Ré-exécuter seulement les tests échoués
+	@echo "$(BLUE)🔄 Ré-exécution des tests échoués...$(NC)"
+	pytest tests/backtesting/ --lf -v
+
+test-debug: ## Exécuter les tests en mode debug
+	@echo "$(BLUE)🐛 Mode debug...$(NC)"
+	pytest tests/backtesting/ --pdb -x
+
+test-watch: ## Mode watch (ré-exécution automatique)
+	@echo "$(BLUE)👀 Mode watch...$(NC)"
+	pytest-watch tests/backtesting/
+
+clean: ## Nettoyer les fichiers temporaires
+	@echo "$(BLUE)🧹 Nettoyage...$(NC)"
+	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+	find . -type d -name ".pytest_cache" -exec rm -rf {} + 2>/dev/null || true
+	find . -type d -name "htmlcov" -exec rm -rf {} + 2>/dev/null || true
+	find . -type f -name ".coverage" -delete 2>/dev/null || true
+	find . -type f -name "*.pyc" -delete 2>/dev/null || true
+	@echo "$(GREEN)✅ Nettoyage terminé$(NC)"
+
+show-coverage: ## Ouvrir le rapport de couverture dans le navigateur
+	@if [ -f htmlcov/index.html ]; then \
+		echo "$(BLUE)📊 Ouverture du rapport...$(NC)"; \
+		python -m webbrowser htmlcov/index.html; \
+	else \
+		echo "$(GREEN)Générez d'abord le rapport avec: make test-coverage$(NC)"; \
+	fi
+
+lint-tests: ## Vérifier le style du code des tests
+	@echo "$(BLUE)🔍 Vérification du style...$(NC)"
+	pylint tests/backtesting/ --disable=C0111,R0903,R0913 || true
+
+format-tests: ## Formater le code des tests
+	@echo "$(BLUE)✨ Formatage du code...$(NC)"
+	black tests/backtesting/
+	isort tests/backtesting/
+
+check-tests: test-coverage lint-tests ## Vérification complète (tests + lint)
+	@echo "$(GREEN)✅ Vérification complète terminée$(NC)"

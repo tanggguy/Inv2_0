@@ -13,6 +13,9 @@ https://github.com/tanggguy/Inv2_0.git
 ```bash
 source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
+# Pour installer les nouvelle dépendances
+pip install -r req.txt
+pip freeze > requirements.txt
 ```
 # Test
 ```bash
