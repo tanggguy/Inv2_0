@@ -1,6 +1,5 @@
-# 🚀 Système de Trading Algorithmique
-
-Système professionnel de trading algorithmique basé sur Backtrader avec architecture modulaire.
+# Système de Trading Algorithmique
+https://github.com/tanggguy/Inv2_0.git
 
 ## 📋 Fonctionnalités
 

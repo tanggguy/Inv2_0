@@ -87,8 +87,8 @@ class OptunaOptimizer:
         
         # Configurer le storage (persistence)
         if storage is None:
-            # Par défaut: SQLite dans le dossier optimization/optuna_studies
-            storage_dir = Path("optimization/optuna_studies")
+            # Par défaut: SQLite dans le dossier results/optuna_studies
+            storage_dir = Path("results/optuna_studies")
             storage_dir.mkdir(parents=True, exist_ok=True)
             storage = f"sqlite:///{storage_dir / 'optuna.db'}"
         self.storage = storage
@@ -388,7 +388,7 @@ class OptunaOptimizer:
                 self.logger.warning(f"Impossible de calculer l'importance: {e}")
             return {}
     
-    def save_visualizations(self, output_dir: str = "optimization/optuna_plots"):
+    def save_visualizations(self, output_dir: str = "results/optuna_plots"):
         """
         Sauvegarde des visualisations Optuna
         

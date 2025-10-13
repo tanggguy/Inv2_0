@@ -1,6 +1,6 @@
 ## Optimisation
 # Dashboard optuna
-optuna-dashboard sqlite:///optimization/optuna_studies/optuna.db
+optuna-dashboard sqlite:///results/optuna_studies/optuna.db
 
 # Optimisation optuna
 python scripts/run_optuna_from_yaml.py config/optuna_SqueezeMomentumStrategy.yaml  

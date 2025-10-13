@@ -61,7 +61,7 @@ optuna:
   # Nombre d'essais (trials)
   # Plus élevé = meilleure exploration mais plus long
   # Recommandé: 50-200 pour tests, 500-1000+ pour production
-  n_trials: 50
+  n_trials: 20
   
   # Timeout en secondes (null = pas de limite)
   # Exemple: 3600 = 1 heure

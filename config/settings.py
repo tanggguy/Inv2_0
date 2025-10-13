@@ -12,7 +12,7 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data_cache"
 LOGS_DIR = BASE_DIR / "logs"
-RESULTS_DIR = BASE_DIR / "results"
+RESULTS_DIR = BASE_DIR / "results" / "rapports_backtest"
 
 # Créer les dossiers s'ils n'existent pas
 for directory in [DATA_DIR, LOGS_DIR, RESULTS_DIR]:
