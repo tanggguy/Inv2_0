@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# optimization/optuna_optimizer.py
 """
 Module d'optimisation Optuna pour le framework de trading
 Intégration complète avec UnifiedOptimizer

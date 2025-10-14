@@ -3,7 +3,6 @@ import pytest
 import backtrader as bt
 from unittest.mock import call
 
-# Assuming the source code is in a file named data_adapters.py
 from data.data_fetcher import PandasData, create_data_feed
 
 

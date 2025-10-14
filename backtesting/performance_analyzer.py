@@ -55,11 +55,14 @@ Capital Initial:        ${r['initial_value']:>15,.2f}
 Capital Final:          ${r['final_value']:>15,.2f}
 Profit/Perte:           ${r['final_value'] - r['initial_value']:>15,.2f}
 Rendement Total:        {r['total_return']:>15.2f}%
+Rendement Annuel:       {r['annual_return']:>15.2f}%
 
 MÉTRIQUES DE RISQUE
 {'='*80}
 Sharpe Ratio:           {r['sharpe_ratio']:>15.2f}
 Max Drawdown:           {r['max_drawdown']:>15.2f}%
+Calmar Ratio:           {r['calmar_ratio']:>15.2f}
+VWR:                    {r['vwr']:>15.2f}
 
 ANALYSE DES TRADES
 {'='*80}
@@ -94,7 +97,11 @@ Perte Moyenne:          ${r['avg_loss']:>15.2f}
         """Retourne un résumé des métriques principales"""
         return {
             "return": self.results["total_return"],
+            "annual_return": self.results["annual_return"],
             "sharpe": self.results["sharpe_ratio"],
+            "max_drawdown": self.results["max_drawdown"],
+            "calmar_ratio": self.results["calmar_ratio"],
+            "vwr": self.results["vwr"],
             "max_dd": self.results["max_drawdown"],
             "win_rate": self.results["win_rate"],
         }

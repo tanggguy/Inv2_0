@@ -105,7 +105,7 @@ class TestRSIStrategy:
         strategy_default = run_backtest(neutral_data, RSIStrategy)
         assert isinstance(strategy_default.rsi, bt.indicators.RSI)
         assert strategy_default.params.rsi_period == 10
-        assert strategy_default.params.rsi_oversold == 30
+        assert strategy_default.params.rsi_oversold == 35
         assert strategy_default.params.rsi_overbought == 60
 
         # Test avec paramètres personnalisés

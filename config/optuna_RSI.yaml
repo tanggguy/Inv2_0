@@ -42,9 +42,7 @@ config:
     - MSFT
     - GOOGL
     - AMZN
-    - QQQ
-    - NKE
-    - TTE.PA
+
   
   # Période de test
   period:

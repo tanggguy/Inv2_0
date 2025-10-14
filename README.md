@@ -25,6 +25,7 @@ pytest -v
 pytest --cov=backtesting --cov-report=html
 pytest --cov=stategies
 pytest --cov=data
+pytest --cov=optimization
 ```
 
 ## Maintenabilité

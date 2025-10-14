@@ -10,14 +10,14 @@ python scripts/run_optuna_from_yaml.py config/optuna_RSI.yaml
 
 ## Backtest
 # Multi-symboles
-python main.py --strategy MaSuperStrategie --symbols AAPL MSFT GOOGL AMZN
+python main.py --strategy MaRSI --symbols AAPL MSFT GOOGL AMZN
 
 # Avec capital initial personnalisé
 python main.py --strategy MovingAverage --symbols AAPL --capital 50000
 
 # Avec graphiques
 
-python main.py --strategy RSITrailingStop --symbols NKE --start-date 2018-12-31 --end-date 2025-10-06
+python main.py --strategy RSI --symbols GOOGL --start-date 2018-12-31 --end-date 2025-10-06
 # Mode verbose (plus de logs)
 python main.py --strategy RSI --symbols TSLA --verbose
 

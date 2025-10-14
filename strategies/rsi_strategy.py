@@ -17,7 +17,7 @@ class RSIStrategy(BaseStrategy):
 
     params = (
         ("rsi_period", 10),
-        ("rsi_oversold", 30),
+        ("rsi_oversold", 35),
         ("rsi_overbought", 60),
         ("printlog", True),
     )

@@ -55,10 +55,16 @@ class BacktestEngine:
         self.cerebro.broker.setcommission(commission=settings.COMMISSION)
 
         # Ajouter les analyseurs
+        # Récupérer les analyseurs
         self.cerebro.addanalyzer(bt.analyzers.SharpeRatio, _name="sharpe")
         self.cerebro.addanalyzer(bt.analyzers.DrawDown, _name="drawdown")
         self.cerebro.addanalyzer(bt.analyzers.Returns, _name="returns")
         self.cerebro.addanalyzer(bt.analyzers.TradeAnalyzer, _name="trades")
+        self.cerebro.addanalyzer(bt.analyzers.AnnualReturn, _name="annual_returns")
+        self.cerebro.addanalyzer(bt.analyzers.Calmar, _name="calmar")
+        self.cerebro.addanalyzer(
+            bt.analyzers.VWR, _name="vwr"
+        )  # Variability-Weighted Return
 
         self.results = None
         self.data_handler = DataHandler()
@@ -201,30 +207,36 @@ class BacktestEngine:
     def _analyze_results(self, start_value, end_value):
         """Analyse les résultats du backtest"""
         try:
-            # Récupérer les analyseurs
+
             sharpe = self.strategy_instance.analyzers.sharpe.get_analysis()
             drawdown = self.strategy_instance.analyzers.drawdown.get_analysis()
-            returns = self.strategy_instance.analyzers.returns.get_analysis()
+            returns_data = self.strategy_instance.analyzers.returns.get_analysis()
             trades = self.strategy_instance.analyzers.trades.get_analysis()
 
-            # Calculer les métriques
-            total_return = (
-                ((end_value - start_value) / start_value) * 100
-                if start_value != 0
-                else 0
-            )
+            calmar = self.strategy_instance.analyzers.calmar.get_analysis()
+            vwr = self.strategy_instance.analyzers.vwr.get_analysis()
 
+            total_return_pct = returns_data.get("rtot", 0) * 100
+            annual_returns_pct = returns_data.get("rnorm100", 0)
             # Nombre de trades
             total_trades = trades.get("total", {}).get("total", 0)
             won_trades = trades.get("won", {}).get("total", 0)
             win_rate = (won_trades / total_trades * 100) if total_trades > 0 else 0
 
+            calmar_ratio = calmar.get("calmar", 0)
+            if calmar_ratio == 0 and annual_returns_pct > 0:
+                max_dd = drawdown.get("max", {}).get("drawdown", 0)
+                if max_dd > 0:
+                    calmar_ratio = annual_returns_pct / max_dd
             results = {
                 "initial_value": start_value,
                 "final_value": end_value,
-                "total_return": total_return,
+                "total_return": total_return_pct,
+                "annual_return": annual_returns_pct,
                 "sharpe_ratio": sharpe.get("sharperatio", 0),
                 "max_drawdown": drawdown.get("max", {}).get("drawdown", 0),
+                "calmar_ratio": calmar_ratio,
+                "vwr": vwr.get("vwr", 0),
                 "total_trades": total_trades,
                 "won_trades": won_trades,
                 "lost_trades": trades.get("lost", {}).get("total", 0),
