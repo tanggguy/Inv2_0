@@ -364,7 +364,9 @@ class MultiSymbolBacktestEngine(BacktestEngine):
         total_pnl = total_final - total_initial
 
         # Return global
-        portfolio_return = (total_pnl / total_initial) * 100
+        portfolio_return = (
+            (total_pnl / total_initial) * 100 if total_initial != 0 else 0
+        )
 
         # Sharpe moyen pondéré par le capital
         weighted_sharpe = sum(
