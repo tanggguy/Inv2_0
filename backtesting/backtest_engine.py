@@ -90,7 +90,7 @@ class BacktestEngine:
                     "strategies.advanced_strategies",
                     "MomentumMultipleStops",
                 ),
-                "MaSuperStrategie": ("strategies.masuperstrategie", "MaSuperStrategie"),
+                "MaRSI": ("strategies.marsi", "MaRSI"),
                 "BollingerBandsStrategy": (
                     "strategies.bollingerbands",
                     "BollingerBandsStrategy",

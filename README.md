@@ -222,3 +222,10 @@ Documentation complète dans `/docs`
 
 
 
+
+Priorité 3 : Métriques Avancées
+Avec empyrical : Sortino, Calmar, Information Ratio
+Priorité 4 : Dashboard Streamlit
+Interface graphique pour visualiser résultats
+Priorité 5 : Rebalancing
+Rééquilibrage périodique du portfolio

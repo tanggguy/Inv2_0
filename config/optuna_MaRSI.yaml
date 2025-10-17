@@ -45,6 +45,8 @@ config:
     - QQQ
     - NKE
     - TTE.PA
+    - SPY
+    - OR.PA
   
   # Période de test
   period:
@@ -61,7 +63,7 @@ optuna:
   # Nombre d'essais (trials)
   # Plus élevé = meilleure exploration mais plus long
   # Recommandé: 50-200 pour tests, 500-1000+ pour production
-  n_trials: 50
+  n_trials: 200
   
   # Timeout en secondes (null = pas de limite)
   # Exemple: 3600 = 1 heure
@@ -87,7 +89,7 @@ optuna:
   # -1 = utiliser tous les CPU disponibles
   # 1 = séquentiel
   # N = N processus en parallèle
-  n_jobs: 6
+  n_jobs: 7
   
   # Sauvegarder les visualisations HTML
   save_plots: false
@@ -130,8 +132,8 @@ param_grid:
   slow_ma_period:
     type: "int"
     low: 50
-    high: 200
-    step: 50
+    high: 150
+    step: 25
   #
   crossover_window:
     type: "int"
@@ -147,14 +149,20 @@ param_grid:
   #
   rsi_oversold:
     type: "int"
-    low: 20
-    high: 80
+    low: 0
+    high: 60
     step: 10
   # 
   rsi_overbought:
     type: "int"
     low: 60
     high: 90
+    step: 10
+  #
+  volume_sma_period : 
+    type: "int"
+    low: 10
+    high: 50
     step: 10
 
   

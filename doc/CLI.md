@@ -11,13 +11,13 @@ python scripts/run_optuna_from_yaml.py config/optuna_RSI.yaml
 ## Backtest
 # Multi-symboles
 python main.py --strategy MaRSI --symbols AAPL MSFT GOOGL AMZN
-
+python main.py --strategy  MaRSI --symbols AAPL,MSFT,GOOGL,AMZN --start-date 2018-12-31 --end-date 2025-10-06
 # Avec capital initial personnalisé
 python main.py --strategy MovingAverage --symbols AAPL --capital 50000
 
 # Avec graphiques
 
-python main.py --strategy RSI --symbols GOOGL --start-date 2018-12-31 --end-date 2025-10-06
+python main.py --strategy RSI --symbols NKE --start-date 2018-12-31 --end-date 2025-10-06 
 # Mode verbose (plus de logs)
 python main.py --strategy RSI --symbols TSLA --verbose
 
@@ -65,3 +65,23 @@ MomentumMultipleStops
 MaRSI
 MeanReversionStrategy
 SqueezeMomentumStrategy
+PortfolioMa_RSI
+
+
+#
+
+python main.py --strategy RSITrailingStop --symbols AAPL,MSFT,GOOGL,AMZN,MC.PA,NKE  --start-date 2018-12-31 --end-date 2025-10-06  --multi-symbol --export 
+
+
+
+python main.py \
+    --mode backtest \
+    --strategy MaRSI \
+    --symbols AAPL,MSFT,GOOGL,AMZN \
+    --start-date 2018-12-31 \
+    --end-date 2025-10-06 \
+    --capital 100000 \
+    --multi-symbol
+    --symbol-weights "AAPL:0.4,MSFT:0.3,GOOGL:0.2,AMZN:0.1"
+    --max-positions 3  # Max 3 positions simultanées
+    --export  # Active export JSON/CSV/HTML

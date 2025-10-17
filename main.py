@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Système de Trading Algorithmique - Point d'entrée principal
-Supporte: Backtesting, Paper Trading (Alpaca), Live Trading
+Supporte: Backtesting (mono et multi-symbole), Paper Trading, Live Trading
 """
 
 import sys
@@ -24,14 +24,24 @@ def parse_arguments():
         epilog="""
 Exemples d'utilisation:
   
-  Backtesting:
-    python main2.py --mode backtest --strategy MovingAverage --symbols AAPL,MSFT
+  Backtesting mono-symbole (mode classique):
+    python main.py --mode backtest --strategy MovingAverage --symbols AAPL
+    
+  Backtesting multi-symbole avec poids égaux:
+    python main.py --mode backtest --strategy MaRSI \\
+        --symbols AAPL,MSFT,GOOGL,AMZN \\
+        --start-date 2018-12-31 --end-date 2025-10-06 \\
+        --multi-symbol --capital 100000
+    
+  Backtesting multi-symbole avec poids custom:
+    python main.py --mode backtest --strategy MaRSI \\
+        --symbols AAPL,MSFT,GOOGL,AMZN \\
+        --multi-symbol \\
+        --symbol-weights "AAPL:0.4,MSFT:0.3,GOOGL:0.2,AMZN:0.1" \\
+        --max-positions 3
     
   Paper Trading avec Alpaca:
-    python main2.py --mode paper
-    
-  Live Trading:
-    python main.py --mode live --strategy RSI --broker alpaca
+    python main.py --mode paper
     
   Mode Test:
     python main.py --test
@@ -51,7 +61,9 @@ Exemples d'utilisation:
 
     # Symboles
     parser.add_argument(
-        "--symbols", type=str, help="Symboles à trader (séparés par des virgules)"
+        "--symbols",
+        type=str,
+        help="Symboles à trader (séparés par des virgules, ex: AAPL,MSFT,GOOGL)",
     )
 
     # Dates pour le backtesting
@@ -68,6 +80,43 @@ Exemples d'utilisation:
         default=100000,
         help="Capital initial (default: 100000)",
     )
+
+    # === NOUVEAUX ARGUMENTS MULTI-SYMBOLE ===
+
+    parser.add_argument(
+        "--multi-symbol",
+        action="store_true",
+        help="Active le mode backtest multi-symbole avec portfolios séparés",
+    )
+
+    parser.add_argument(
+        "--symbol-weights",
+        type=str,
+        default=None,
+        help="Poids custom par symbole (ex: 'AAPL:0.4,MSFT:0.3,GOOGL:0.2,AMZN:0.1'). Si non spécifié, equal-weight.",
+    )
+
+    parser.add_argument(
+        "--max-positions",
+        type=int,
+        default=None,
+        help="Nombre maximum de positions simultanées (optionnel)",
+    )
+
+    parser.add_argument(
+        "--export",
+        action="store_true",
+        help="Exporte les résultats (JSON, CSV, HTML) pour le mode multi-symbole",
+    )
+
+    parser.add_argument(
+        "--export-dir",
+        type=str,
+        default=None,
+        help="Répertoire d'export personnalisé (par défaut: results/multi_symbol/)",
+    )
+
+    # === FIN NOUVEAUX ARGUMENTS ===
 
     # Broker pour le live trading
     parser.add_argument(
@@ -88,13 +137,40 @@ Exemples d'utilisation:
     return parser.parse_args()
 
 
+def parse_symbol_weights(weights_str: str) -> dict:
+    """
+    Parse une chaîne de poids en dict
+
+    Args:
+        weights_str: "AAPL:0.4,MSFT:0.3,GOOGL:0.2,AMZN:0.1"
+
+    Returns:
+        Dict {symbol: weight}
+    """
+    if not weights_str:
+        return None
+
+    weights = {}
+
+    try:
+        for pair in weights_str.split(","):
+            symbol, weight = pair.split(":")
+            weights[symbol.strip()] = float(weight.strip())
+
+        logger.info(f"Poids parsés: {weights}")
+        return weights
+
+    except Exception as e:
+        logger.error(f"Erreur parsing poids: {e}")
+        logger.error("Format attendu: 'AAPL:0.4,MSFT:0.3,GOOGL:0.2,AMZN:0.1'")
+        return None
+
+
 def run_backtest(args):
-    """Lance un backtest"""
+    """Lance un backtest (mono ou multi-symbole)"""
     logger.info("📊 Mode Backtesting")
 
     try:
-        from backtesting.backtest_engine import BacktestEngine
-
         # Récupérer les paramètres
         strategy_name = args.strategy or "MovingAverage"
         symbols = args.symbols.split(",") if args.symbols else ["AAPL"]
@@ -106,232 +182,207 @@ def run_backtest(args):
         logger.info(f"Période: {start_date} à {end_date}")
         logger.info(f"Capital: ${args.capital:,.2f}")
 
-        # Créer et lancer le backtest
-        engine = BacktestEngine(
-            strategy_name=strategy_name,
-            symbols=symbols,
-            start_date=start_date,
-            end_date=end_date,
-            initial_capital=args.capital,
-            verbose=args.verbose,
-        )
+        # === MODE MULTI-SYMBOLE ===
+        if args.multi_symbol or len(symbols) > 1:
+            logger.info("🔀 Mode MULTI-SYMBOLE activé")
 
-        # Lancer le backtest
-        logger.info("Lancement du backtest...")
-        results = engine.run()
+            from backtesting.multi_symbol_engine import MultiSymbolBacktestEngine
 
-        # Afficher les résultats
-        engine.plot_results()
+            # Parser les poids si fournis
+            symbol_weights = parse_symbol_weights(args.symbol_weights)
 
-        # Sauvegarder les résultats
-        engine.generate_report()
+            # Créer le moteur multi-symbole
+            engine = MultiSymbolBacktestEngine(
+                strategy_name=strategy_name,
+                symbols=symbols,
+                start_date=start_date,
+                end_date=end_date,
+                initial_capital=args.capital,
+                symbol_weights=symbol_weights,
+                max_positions=args.max_positions,
+                verbose=args.verbose,
+            )
 
-        logger.info("✅ Backtest terminé avec succès")
-        return 0
+            # Lancer le backtest
+            logger.info("Lancement du backtest multi-symbole...\n")
+            results = engine.run()
+
+            if results:
+                logger.info("\n✅ Backtest multi-symbole terminé avec succès!")
+
+                # Export si demandé
+                if args.export:
+                    logger.info("\n📦 Export des résultats...")
+                    from backtesting.multi_symbol_exporter import MultiSymbolExporter
+
+                    exporter = MultiSymbolExporter(
+                        results=results, output_dir=args.export_dir
+                    )
+
+                    exported_files = exporter.export_all()
+
+                    logger.info("\n✅ Export terminé:")
+                    for file_type, filepath in exported_files.items():
+                        logger.info(f"   • {file_type}: {filepath}")
+
+                # Analyse détaillée
+                logger.info("\n📊 Analyse détaillée:")
+                from backtesting.symbol_analyzer import SymbolAnalyzer
+
+                analyzer = SymbolAnalyzer(results["by_symbol"])
+
+                # Utiliser vraies corrélations si disponibles
+                returns_data = results.get("daily_returns", {})
+                if returns_data:
+                    logger.info("✓ Utilisation des returns réels pour corrélations")
+
+                    # Calculer matrice de corrélation
+                    corr_matrix = analyzer.calculate_correlation_matrix(returns_data)
+                    logger.info(f"\n🔗 Matrice de Corrélation:")
+                    logger.info(corr_matrix.round(2).to_string())
+
+                    # Calculer diversification ratio
+                    div_ratio = analyzer.calculate_diversification_ratio(returns_data)
+                else:
+                    logger.warning(
+                        "⚠️  Returns non disponibles, corrélations simplifiées"
+                    )
+
+                analyzer.print_analysis()
+
+            else:
+                logger.error("❌ Erreur lors du backtest")
+                return None
+
+        # === MODE MONO-SYMBOLE (classique) ===
+        else:
+            logger.info("📈 Mode MONO-SYMBOLE (classique)")
+
+            from backtesting.backtest_engine import BacktestEngine
+
+            # Créer et lancer le backtest classique
+            engine = BacktestEngine(
+                strategy_name=strategy_name,
+                symbols=symbols,
+                start_date=start_date,
+                end_date=end_date,
+                initial_capital=args.capital,
+                verbose=args.verbose,
+            )
+
+            # Lancer le backtest
+            logger.info("Lancement du backtest...\n")
+            results = engine.run()
+
+            if results:
+                logger.info("\n✅ Backtest terminé avec succès!")
+
+                # Générer rapport
+                report_path = engine.generate_report()
+                if report_path:
+                    logger.info(f"📄 Rapport: {report_path}")
+            else:
+                logger.error("❌ Erreur lors du backtest")
+                return None
+
+        return results
 
     except Exception as e:
-        logger.error(f"❌ Erreur lors du backtest: {e}")
-        return 1
+        logger.error(f"❌ Erreur: {e}")
+        if args.verbose:
+            import traceback
+
+            traceback.print_exc()
+        return None
 
 
 def run_paper_trading(args):
-    """Lance le mode paper trading avec Alpaca"""
-    logger.info("🤖 Mode Paper Trading avec Alpaca")
+    """Lance le paper trading"""
+    logger.info("📃 Mode Paper Trading")
 
     try:
-        # Importer le moteur de paper trading
         from paper_trading.paper_engine import PaperTradingEngine
 
-        # Créer et initialiser le moteur
-        logger.info("Initialisation du Paper Trading Engine...")
+        logger.info("Démarrage du paper trading avec Alpaca...")
+
         engine = PaperTradingEngine()
-
-        if not engine.initialize():
-            logger.error("Échec de l'initialisation du paper trading")
-            return 1
-
-        # Démarrer le trading
-        logger.info("Démarrage du paper trading...")
         engine.start()
 
-        return 0
+        logger.info("✅ Paper trading lancé avec succès!")
+        logger.info("Appuyez sur Ctrl+C pour arrêter")
 
-    except ImportError as e:
-        logger.error(f"Module paper_trading non trouvé: {e}")
-        logger.error(
-            "Assurez-vous d'avoir installé les dépendances: pip install alpaca-trade-api"
-        )
-        return 1
     except KeyboardInterrupt:
-        logger.info("Paper trading interrompu par l'utilisateur")
-        return 0
+        logger.info("\n⏹️  Arrêt demandé par l'utilisateur")
     except Exception as e:
-        logger.error(f"Erreur dans le paper trading: {e}")
-        return 1
+        logger.error(f"❌ Erreur: {e}")
+        if args.verbose:
+            import traceback
+
+            traceback.print_exc()
 
 
 def run_live_trading(args):
-    """Lance le mode live trading"""
-    logger.info("💰 Mode Live Trading")
-    logger.warning("⚠️  ATTENTION: Mode LIVE - Argent réel en jeu!")
-
-    # Demander confirmation
-    confirmation = input("Êtes-vous sûr de vouloir lancer le trading LIVE? (oui/non): ")
-    if confirmation.lower() != "oui":
-        logger.info("Trading live annulé")
-        return 0
-
-    logger.warning("⚠️  Mode live trading non encore implémenté pour la sécurité")
-    logger.info("Utilisez le mode paper trading pour tester vos stratégies")
-
-    return 0
+    """Lance le live trading"""
+    logger.error("🚫 Live trading non encore implémenté")
+    logger.info("Utilisez --mode paper pour le paper trading")
 
 
 def run_tests():
     """Lance les tests du système"""
-    logger.info("🧪 Lancement des tests")
+    logger.info("🧪 Lancement des tests...")
 
     try:
         import pytest
 
-        # Créer le dossier tests s'il n'existe pas
-        tests_dir = Path("tests")
-        if not tests_dir.exists():
-            logger.warning("Dossier tests non trouvé, création...")
-            tests_dir.mkdir()
+        exit_code = pytest.main(["-v", "tests/"])
 
-            # Créer un test basique
-            test_file = tests_dir / "test_basic.py"
-            test_file.write_text(
-                """
-def test_import():
-    '''Test que les imports fonctionnent'''
-    import backtrader
-    import pandas
-    import numpy
-    assert True
-
-def test_config():
-    '''Test la configuration'''
-    from config import settings
-    assert settings.INITIAL_CAPITAL > 0
-"""
-            )
-
-        # Lancer pytest
-        result = pytest.main(["-v", "tests/"])
-
-        if result == 0:
-            logger.info("✅ Tous les tests sont passés")
+        if exit_code == 0:
+            logger.info("✅ Tous les tests ont réussi!")
         else:
-            logger.error("❌ Certains tests ont échoué")
-
-        return result
+            logger.error(f"❌ Certains tests ont échoué (code: {exit_code})")
 
     except ImportError:
-        logger.error("pytest n'est pas installé. Installez-le avec: pip install pytest")
-        return 1
-    except Exception as e:
-        logger.error(f"Erreur lors des tests: {e}")
-        return 1
-
-
-def check_dependencies():
-    """Vérifie que les dépendances sont installées"""
-    required_packages = [
-        "backtrader",
-        "pandas",
-        "numpy",
-        "yfinance",
-    ]
-
-    optional_packages = [
-        ("alpaca_trade_api", "Paper Trading avec Alpaca"),
-        ("telegram", "Notifications Telegram"),
-        ("streamlit", "Dashboard d'optimisation"),
-    ]
-
-    missing_required = []
-    missing_optional = []
-
-    # Vérifier les packages requis
-    for package in required_packages:
-        try:
-            __import__(package.replace("-", "_"))
-        except ImportError:
-            missing_required.append(package)
-
-    # Vérifier les packages optionnels
-    for package, description in optional_packages:
-        try:
-            __import__(package.replace("-", "_"))
-        except ImportError:
-            missing_optional.append((package, description))
-
-    # Afficher les résultats
-    if missing_required:
-        logger.error("❌ Packages requis manquants:")
-        for package in missing_required:
-            logger.error(f"  - {package}")
-        logger.error("Installez-les avec: pip install -r requirements.txt")
-        return False
-
-    if missing_optional:
-        logger.warning("⚠️  Packages optionnels manquants:")
-        for package, desc in missing_optional:
-            logger.warning(f"  - {package} ({desc})")
-
-    return True
+        logger.error("❌ pytest n'est pas installé")
+        logger.info("Installez-le avec: pip install pytest")
 
 
 def main():
-    """Fonction principale"""
+    """Point d'entrée principal"""
     args = parse_arguments()
 
-    # Configuration du logging
+    # Configuration du niveau de log
     if args.verbose:
         logging.getLogger().setLevel(logging.DEBUG)
 
-    # Afficher le banner
-    print(
-        """
-    ╔══════════════════════════════════════════════════════════╗
-    ║                                                          ║
-    ║        🤖 SYSTÈME DE TRADING ALGORITHMIQUE 🤖          ║
-    ║                                                          ║
-    ║              Powered by Backtrader                       ║
-    ║                                                          ║
-    ╚══════════════════════════════════════════════════════════╝
-    """
-    )
-
-    # Vérifier les dépendances
-    if not check_dependencies():
-        return 1
+    # Bannière
+    logger.info("=" * 80)
+    logger.info("🚀 SYSTÈME DE TRADING ALGORITHMIQUE")
+    logger.info("=" * 80)
 
     # Mode test
     if args.test:
-        return run_tests()
+        run_tests()
+        return
 
-    # Sélectionner le mode
+    # Dispatcher selon le mode
     if args.mode == "backtest":
-        return run_backtest(args)
+        run_backtest(args)
     elif args.mode == "paper":
-        return run_paper_trading(args)
+        run_paper_trading(args)
     elif args.mode == "live":
-        return run_live_trading(args)
+        run_live_trading(args)
     else:
         logger.error(f"Mode inconnu: {args.mode}")
-        return 1
 
 
 if __name__ == "__main__":
     try:
-        exit_code = main()
-        sys.exit(exit_code)
+        main()
     except KeyboardInterrupt:
-        logger.info("\n⚠️  Interruption par l'utilisateur")
-        sys.exit(0)
+        logger.info("\n⏹️  Programme interrompu")
     except Exception as e:
-        logger.error(f"❌ Erreur fatale: {e}", exc_info=True)
+        logger.error(f"❌ Erreur fatale: {e}")
+        import traceback
+
+        traceback.print_exc()
         sys.exit(1)

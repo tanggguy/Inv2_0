@@ -420,6 +420,7 @@ class UnifiedOptimizer:
             cerebro.addanalyzer(bt.analyzers.Returns, _name="returns")
             cerebro.addanalyzer(bt.analyzers.TradeAnalyzer, _name="trades")
             cerebro.addanalyzer(bt.analyzers.DrawDown, _name="drawdown")
+            cerebro.addanalyzer(bt.analyzers.VWR, _name="vwr")
 
             # Exécuter
             start_value = cerebro.broker.getvalue()
@@ -431,6 +432,7 @@ class UnifiedOptimizer:
             sharpe = strat.analyzers.sharpe.get_analysis()
             returns = strat.analyzers.returns.get_analysis()
             drawdown = strat.analyzers.drawdown.get_analysis()
+            vwr = strat.analyzers.vwr.get_analysis()
             trades = strat.analyzers.trades.get_analysis()
 
             total_trades = trades.get("total", {}).get("total", 0)
@@ -438,9 +440,11 @@ class UnifiedOptimizer:
 
             result = {
                 **params,
+                "return": returns.get("rtot", 0) * 100 or 0,
+                "return_annual": returns.get("rnorm100", 0) or 0,
                 "sharpe": sharpe.get("sharperatio", 0) or 0,
-                "return": returns.get("returns", 0) or 0,
                 "drawdown": drawdown.get("max", {}).get("drawdown", 0),
+                "vwr": vwr.get("vwr", 0) or 0,
                 "trades": total_trades,
                 "win_rate": (
                     (won_trades / total_trades * 100) if total_trades > 0 else 0
@@ -745,9 +749,14 @@ class UnifiedOptimizer:
         logger.info(f"\n{'='*80}")
         logger.info("🏆 MEILLEURE COMBINAISON")
         logger.info(f"{'='*80}")
-        logger.info(f"   Sharpe Ratio:  {best_backtest_result.get('sharpe', 0):.2f}")
+
         logger.info(f"   Return:        {best_backtest_result.get('return', 0):.2f}%")
+        logger.info(
+            f"   Annual return:        {best_backtest_result.get('return_annual', 0):.2f}%"
+        )
+        logger.info(f"   Sharpe Ratio:  {best_backtest_result.get('sharpe', 0):.2f}")
         logger.info(f"   Drawdown:      {best_backtest_result.get('drawdown', 0):.2f}%")
+        logger.info(f"   Vwr:           {best_backtest_result.get('vwr', 0):.2f}")
         logger.info(f"   Trades:        {best_backtest_result.get('trades', 0)}")
         logger.info(f"   Win Rate:      {best_backtest_result.get('win_rate', 0):.2f}%")
 

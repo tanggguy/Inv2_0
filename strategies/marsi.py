@@ -42,7 +42,7 @@ class MaRSI(BaseAdvancedStrategy):
         ("rsi_overbought", 80),  # Vrai surachat (modifié de 65)
         ("ema_trend_period", 200),  #  Filtre tendance
         ("volume_sma_period", 20),  #  Moyenne volume
-        ("volume_multiplier", 1.5),  #  Seuil volume
+        ("volume_multiplier", 1.0),  #  Seuil volume
         # ========== FILTRES ==========
         ("use_trend_filter", True),  #  Activer filtre EMA 200
         ("use_volume_filter", True),  #  Activer filtre volume

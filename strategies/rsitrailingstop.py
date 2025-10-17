@@ -15,13 +15,13 @@ class RSITrailingStop(BaseAdvancedStrategy):
 
     params = (
         ("rsi_period", 10),
-        ("rsi_oversold", 30),
+        ("rsi_oversold", 35),
         ("rsi_overbought", 60),
         ("use_stop_loss", True),
         ("stop_loss_pct", 0.03),
         ("use_take_profit", False),  # On préfère le trailing
         ("use_trailing_stop", True),
-        ("trailing_stop_pct", 0.03),
+        ("trailing_stop_pct", 0.07),
         ("trailing_activation_pct", 0.02),
         ("printlog", True),
     )
