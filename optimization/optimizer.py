@@ -257,7 +257,7 @@ class UnifiedOptimizer:
 
                     # Callback progression BEAUCOUP PLUS FRÉQUENT (à chaque itération)
                     if progress_callback:
-                        progress_pct = i / total
+                        progress_pct = i / total if total > 0 else 1.0
 
                         # Estimation du temps restant
                         elapsed = time.time() - start_time
@@ -272,7 +272,7 @@ class UnifiedOptimizer:
                         progress_callback(progress_pct, eta_seconds)
 
                     # Log tous les 10%
-                    if self.verbose and i % max(1, total // 10) == 0:
+                    if total != 0 and self.verbose and i % max(1, total // 10) == 0:
                         logger.info(f"  Progression: {i}/{total} ({i/total*100:.0f}%)")
 
         except Exception as e:
@@ -289,9 +289,10 @@ class UnifiedOptimizer:
         failed = total - len(self.results)
         logger.info(f"\n✅ Parallélisation terminée:")
         logger.info(f"   Temps: {backtest_time:.2f}s")
-        logger.info(f"   Vitesse: ~{backtest_time/total:.3f}s par combinaison")
+        if total > 0:
+            logger.info(f"   Vitesse: ~{backtest_time/total:.3f}s par combinaison")
         logger.info(f"   Résultats valides: {len(self.results)}/{total}")
-        if failed > 0:
+        if failed > 0 and total > 0:
             logger.info(f"   Filtrés/Échoués: {failed} ({failed/total*100:.1f}%)")
 
         # Speedup vs séquentiel
@@ -352,7 +353,7 @@ class UnifiedOptimizer:
 
             # ✅ Callback progression avec ETA (2 arguments au lieu d'1)
             if progress_callback:
-                progress_pct = i / total
+                progress_pct = i / total if total > 0 else 1.0
 
                 # Estimation du temps restant
                 elapsed = time.time() - start_time
@@ -368,7 +369,8 @@ class UnifiedOptimizer:
 
         backtest_time = time.time() - backtest_start
         logger.info(f"⏱️ Temps de backtesting: {backtest_time:.2f}s")
-        logger.info(f"   (~{backtest_time/total:.2f}s par combinaison)\n")
+        if total > 0:
+            logger.info(f"   (~{backtest_time/total:.2f}s par combinaison)\n")
 
         # Analyser et sauvegarder
         results = self._analyze_results()
@@ -569,7 +571,7 @@ class UnifiedOptimizer:
             else:
                 logger.warning(f"Période {i}: Aucun trade en Out-Sample\n")
 
-            if progress_callback:
+            if progress_callback and total_steps > 0:
                 progress_callback(i / total_steps)
 
         return self._analyze_walk_forward_results(walk_forward_results)

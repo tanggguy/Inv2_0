@@ -36,7 +36,7 @@ class MaRSI(BaseAdvancedStrategy):
         # ========== INDICATEURS ==========
         ("fast_ma_period", 20),  # MA rapide (modifié de 50)
         ("slow_ma_period", 50),  # MA lente (modifié de 150)
-        ("crossover_window", 5),  # Fenêtre
+        ("crossover_window", 3),  # Fenêtre
         ("rsi_period", 14),  # RSI standard (modifié de 7)
         ("rsi_oversold", 0),  # momentum chez les acheteurs, on suit la tendance
         ("rsi_overbought", 80),  # Vrai surachat (modifié de 65)
@@ -44,15 +44,15 @@ class MaRSI(BaseAdvancedStrategy):
         ("volume_sma_period", 20),  #  Moyenne volume
         ("volume_multiplier", 1.0),  #  Seuil volume
         # ========== FILTRES ==========
-        ("use_trend_filter", True),  #  Activer filtre EMA 200
-        ("use_volume_filter", True),  #  Activer filtre volume
+        ("use_trend_filter", False),  #  Activer filtre EMA 200
+        ("use_volume_filter", False),  #  Activer filtre volume
         ("min_volume_ratio", 1.1),  #  Volume min / moyenne
         # ========== GESTION DES RISQUES ==========
         ("use_stop_loss", True),
         ("use_atr_stop", True),
         ("stop_loss_atr_mult", 2.0),
         ("atr_period", 14),
-        ("use_take_profit", True),
+        ("use_take_profit", False),
         ("take_profit_pct", 0.05),  # take profit
         ("use_trailing_stop", True),
         ("trailing_stop_pct", 0.035),  # trailing

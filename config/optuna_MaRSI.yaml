@@ -126,44 +126,38 @@ param_grid:
   fast_ma_period:
     type: "int"
     low: 10
-    high: 50
-    step: 10
+    high: 60
+    step: 5
   #
   slow_ma_period:
     type: "int"
-    low: 50
+    low: 40
     high: 150
-    step: 25
+    step: 10
   #
   crossover_window:
     type: "int"
-    low: 2
+    low: 1
     high: 10
-    step: 2
+    step: 1
   # Période RSI
   rsi_period:
     type: "int"
     low: 7
-    high: 19
+    high: 16
     step: 3
   #
   rsi_oversold:
     type: "int"
-    low: 0
+    low: 20
     high: 60
-    step: 10
+    step: 5
   # 
   rsi_overbought:
     type: "int"
-    low: 60
-    high: 90
-    step: 10
-  #
-  volume_sma_period : 
-    type: "int"
-    low: 10
-    high: 50
-    step: 10
+    low: 65
+    high: 75
+    step: 5
 
   
     

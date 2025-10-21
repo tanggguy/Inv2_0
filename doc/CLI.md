@@ -65,12 +65,12 @@ MomentumMultipleStops
 MaRSI
 MeanReversionStrategy
 SqueezeMomentumStrategy
-PortfolioMa_RSI
+
 
 
 #
 
-python main.py --strategy RSITrailingStop --symbols AAPL,MSFT,GOOGL,AMZN,MC.PA,NKE  --start-date 2018-12-31 --end-date 2025-10-06  --multi-symbol --export 
+python main.py --strategy SqueezeMomentumStrategy --symbols AAPL,MSFT,GOOGL,AMZN,MC.PA,NKE,QQQ,SPY,EURUSD=X  --start-date 2018-12-31 --end-date 2025-10-06  --multi-symbol --export 
 
 
 
