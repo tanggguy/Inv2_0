@@ -7,9 +7,7 @@ Supporte: Backtesting (mono et multi-symbole), Paper Trading, Live Trading
 import sys
 import argparse
 import logging
-from pathlib import Path
 from datetime import datetime
-from config import settings
 from monitoring.logger import setup_logger
 
 # Configuration du logger principal
@@ -22,28 +20,27 @@ def parse_arguments():
         description="Système de Trading Algorithmique",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-Exemples d'utilisation:
-  
-  Backtesting mono-symbole (mode classique):
-    python main.py --mode backtest --strategy MovingAverage --symbols AAPL
-    
-  Backtesting multi-symbole avec poids égaux:
-    python main.py --mode backtest --strategy MaRSI \\
+Exemples d'utilisation :
+Backtesting mono-symbole (mode classique):
+python main.py --mode backtest --strategy MovingAverage --symbols AAPL
+
+Backtesting multi-symbole avec poids égaux:
+  python main.py --mode backtest --strategy MaRSI \\
         --symbols AAPL,MSFT,GOOGL,AMZN \\
         --start-date 2018-12-31 --end-date 2025-10-06 \\
         --multi-symbol --capital 100000
-    
-  Backtesting multi-symbole avec poids custom:
-    python main.py --mode backtest --strategy MaRSI \\
+
+Backtesting multi-symbole avec poids custom:
+python main.py --mode backtest --strategy MaRSI \\
         --symbols AAPL,MSFT,GOOGL,AMZN \\
         --multi-symbol \\
         --symbol-weights "AAPL:0.4,MSFT:0.3,GOOGL:0.2,AMZN:0.1" \\
         --max-positions 3
     
-  Paper Trading avec Alpaca:
+Paper Trading avec Alpaca:
     python main.py --mode paper
     
-  Mode Test:
+Mode Test:
     python main.py --test
         """,
     )
@@ -57,7 +54,9 @@ Exemples d'utilisation:
     )
 
     # Stratégie
-    parser.add_argument("--strategy", type=str, help="Nom de la stratégie à utiliser")
+    parser.add_argument(
+        "--strategy", type=str, help="Nom de la stratégie à uti" "liser"
+    )
 
     # Symboles
     parser.add_argument(
@@ -240,7 +239,6 @@ def run_backtest(args):
                     corr_matrix = analyzer.calculate_correlation_matrix(returns_data)
                     logger.info(f"\n🔗 Matrice de Corrélation:")
                     logger.info(corr_matrix.round(2).to_string())
-
                     # Calculer diversification ratio
                     div_ratio = analyzer.calculate_diversification_ratio(returns_data)
                 else:
