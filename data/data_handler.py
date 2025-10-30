@@ -27,7 +27,7 @@ class DataHandler:
             f"DataHandler initialisé: source={data_source}, cache={self.cache_enabled}"
         )
 
-    def fetch_data(self, symbol, start_date, end_date, interval="1h"):
+    def fetch_data(self, symbol, start_date, end_date, interval="1d"):
         """
         Récupère les données pour un symbole
 
@@ -129,7 +129,7 @@ class DataHandler:
 
         return None
 
-    def fetch_multiple(self, symbols, start_date, end_date, interval="1h"):
+    def fetch_multiple(self, symbols, start_date, end_date, interval="1d"):
         """Télécharge les données pour plusieurs symboles"""
         data_dict = {}
 
