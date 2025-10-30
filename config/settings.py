@@ -73,7 +73,7 @@ TELEGRAM_CONFIG = {
 BACKTEST_CONFIG = {
     "start_date": "2020-01-01",
     "end_date": "2024-12-31",
-    "data_frequency": "1h",  # 1d, 1h, 15m, etc.
+    "data_frequency": "15Min",  # 1d, 1h, 15m, etc.
     "slippage": 0.0005,  # 0.05%
 }
 

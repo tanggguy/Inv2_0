@@ -17,7 +17,7 @@ python main.py --strategy MovingAverage --symbols AAPL --capital 50000
 
 # Avec graphiques
 
-python main.py --strategy RSI --symbols NKE --start-date 2018-12-31 --end-date 2025-10-06 
+python main.py --strategy RSI --symbols DIS --start-date 2023-10-31 --end-date 2025-10-32 
 # Mode verbose (plus de logs)
 python main.py --strategy RSI --symbols TSLA --verbose
 
